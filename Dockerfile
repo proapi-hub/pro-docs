@@ -5,7 +5,7 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 # 启用 pnpm（package.json 用的是 pnpm-lock.yaml）
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.15.0 --activate
 
 # 复制依赖清单 + 源码，一次性走 pnpm install（content 在仓库里，postinstall 的 fumadocs-mdx 需要它）
 COPY . .
