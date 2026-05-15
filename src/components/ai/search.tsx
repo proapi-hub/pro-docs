@@ -24,6 +24,9 @@ const Context = createContext<{
   open: boolean;
   setOpen: (open: boolean) => void;
   chat: UseChatHelpers<ChatUIMessage>;
+  models: string[];
+  model: string;
+  setModel: (m: string) => void;
 } | null>(null);
 
 export function AISearchPanelHeader({ className, ...props }: ComponentProps<'div'>) {
@@ -38,9 +41,12 @@ export function AISearchPanelHeader({ className, ...props }: ComponentProps<'div
       {...props}
     >
       <div className="px-3 py-2 flex-1">
-        <p className="text-sm font-medium mb-2">AI Chat</p>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-sm font-medium">AI 问答</p>
+          <AIModelPicker />
+        </div>
         <p className="text-xs text-fd-muted-foreground">
-          AI can be inaccurate, please verify the answers.
+          AI 答案可能有误，请自行核实。
         </p>
       </div>
 
@@ -119,7 +125,8 @@ export function AISearchInput(props: ComponentProps<'form'>) {
         {
           type: 'data-client',
           data: {
-            location: location.href,
+            location: location.pathname + location.search,
+            pageTitle: document.title,
           },
         },
         {
@@ -306,17 +313,109 @@ function Message({ message, ...props }: { message: ChatUIMessage } & ComponentPr
   );
 }
 
+const ModelStorageKey = '__ai_search_model';
+
 export function AISearch({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [models, setModels] = useState<string[]>([]);
+  const [model, setModelState] = useState<string>('');
+  const modelRef = useRef<string>('');
+
+  const setModel = (m: string) => {
+    setModelState(m);
+    modelRef.current = m;
+    try {
+      localStorage.setItem(ModelStorageKey, m);
+    } catch {}
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/models');
+        const json: { models?: string[] } = await res.json();
+        if (cancelled) return;
+        const list = json.models ?? [];
+        setModels(list);
+        const saved = (() => {
+          try {
+            return localStorage.getItem(ModelStorageKey) ?? '';
+          } catch {
+            return '';
+          }
+        })();
+        const initial = saved && list.includes(saved) ? saved : list[0] ?? '';
+        setModel(initial);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const chat = useChat<ChatUIMessage>({
     id: 'search',
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-    }),
+    transport: useMemo(
+      () =>
+        new DefaultChatTransport({
+          api: '/api/chat',
+          prepareSendMessagesRequest: ({ messages, body }) => ({
+            body: { ...body, messages, model: modelRef.current },
+          }),
+        }),
+      [],
+    ),
   });
 
   return (
-    <Context value={useMemo(() => ({ chat, open, setOpen }), [chat, open])}>{children}</Context>
+    <Context
+      value={useMemo(
+        () => ({ chat, open, setOpen, models, model, setModel }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [chat, open, models, model],
+      )}
+    >
+      {children}
+    </Context>
+  );
+}
+
+export function AIModelPicker({ className }: { className?: string }) {
+  const { models, model, setModel } = useAISearchContext();
+  if (models.length === 0) return null;
+  return (
+    <div
+      className={cn(
+        'relative inline-flex items-center text-xs text-fd-muted-foreground hover:text-fd-foreground transition-colors',
+        className,
+      )}
+    >
+      <select
+        aria-label="选择模型"
+        value={model}
+        onChange={(e) => setModel(e.target.value)}
+        className="appearance-none bg-transparent border-0 outline-none pr-4 pl-1 py-0.5 font-mono text-[11px] cursor-pointer max-w-[160px] truncate focus:ring-0"
+      >
+        {models.map((m) => (
+          <option key={m} value={m} className="font-mono">
+            {m}
+          </option>
+        ))}
+      </select>
+      <svg
+        className="pointer-events-none absolute right-0 size-3 opacity-60"
+        viewBox="0 0 12 12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path d="M3 4.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
   );
 }
 

@@ -1,0 +1,252 @@
+---
+title: "OpenAI 兼容端点"
+description: "通过 OpenAI 官方 SDK 风格调用 ProAPI 的所有 LLM 模型与图片生成模型"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { BotIcon, SparklesIcon, FilmIcon } from 'lucide-react';
+
+## 总览
+
+OpenAI 兼容端点是 ProAPI **最通用** 的接入方式。无论上游是 GPT、Claude 还是 Gemini，都可以通过 OpenAI 协议统一调用。适合：
+
+- 已有基于 OpenAI SDK 的代码
+- 接入 Cherry Studio、Cline、OpenCode、Cursor 等第三方 OpenAI 协议客户端
+- 在不更换 SDK 的情况下切换不同上游模型
+
+| 端点 | 用途 |
+| --- | --- |
+| `POST /v1/chat/completions` | 对话补全（GPT / Claude / Gemini / Grok 全部支持） |
+| `POST /v1/completions` | 早期 completion 协议（兼容保留，**新项目不建议使用**） |
+| `POST /v1/embeddings` | 文本向量化 |
+| `POST /v1/images/generations` | 文生图 |
+| `POST /v1/images/edits` | 图生图 / 图片编辑 |
+| `GET /v1/models` | 列出当前令牌可访问的模型 |
+
+<Callout type="info" title="Base URL">
+  所有 OpenAI 端点的 base URL 统一为 `https://newapi.prorisehub.com/v1`。SDK 配置时把 `base_url` 改成这个地址即可。
+</Callout>
+
+## /v1/chat/completions
+
+### 最小请求示例
+
+<Tabs items={['cURL', 'Python (openai SDK)', 'Node.js (openai SDK)']}>
+<Tab value="cURL">
+
+```bash
+curl https://newapi.prorisehub.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "messages": [
+      {"role": "system", "content": "你是简洁的助理"},
+      {"role": "user", "content": "用一句话解释什么是 RAG"}
+    ],
+    "stream": false
+  }'
+```
+
+</Tab>
+<Tab value="Python (openai SDK)">
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-你的令牌",
+    base_url="https://newapi.prorisehub.com/v1",
+)
+
+resp = client.chat.completions.create(
+    model="claude-sonnet-4-6",
+    messages=[
+        {"role": "system", "content": "你是简洁的助理"},
+        {"role": "user", "content": "用一句话解释什么是 RAG"},
+    ],
+)
+print(resp.choices[0].message.content)
+```
+
+</Tab>
+<Tab value="Node.js (openai SDK)">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-你的令牌",
+  baseURL: "https://newapi.prorisehub.com/v1",
+});
+
+const resp = await client.chat.completions.create({
+  model: "claude-sonnet-4-6",
+  messages: [
+    { role: "system", content: "你是简洁的助理" },
+    { role: "user", content: "用一句话解释什么是 RAG" },
+  ],
+});
+console.log(resp.choices[0].message.content);
+```
+
+</Tab>
+</Tabs>
+
+### 常用参数
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `model` | string | ✅ | 模型 ID，必须在当前令牌分组中可用 |
+| `messages` | array | ✅ | 标准 OpenAI 消息数组，支持 `role` 为 `system` / `user` / `assistant` / `tool` |
+| `stream` | boolean | – | `true` 走 SSE 流式输出；默认 `false` |
+| `temperature` | number | – | `0`–`2`；推理类模型如 `gpt-5.1-high` 会被上游忽略此参数 |
+| `max_tokens` / `max_completion_tokens` | int | – | 输出上限；推理模型必须用 `max_completion_tokens` |
+| `tools` / `tool_choice` | array / string | – | 函数调用支持，上游若不支持会自动降级为普通文本 |
+| `response_format` | object | – | `{"type":"json_object"}` 走 JSON 模式 |
+| `reasoning_effort` | string | – | `low` / `medium` / `high` / `xhigh`，控制推理模型思考深度 |
+
+### 流式响应
+
+`stream: true` 时返回 SSE 流，每个 `data:` 行是一个 JSON 块。流终止标志为 `data: [DONE]`：
+
+```
+data: {"id":"chatcmpl-xx","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant"},"index":0}]}
+data: {"id":"chatcmpl-xx","object":"chat.completion.chunk","choices":[{"delta":{"content":"你"},"index":0}]}
+...
+data: [DONE]
+```
+
+OpenAI SDK 会自动处理这个协议，你只需要 `stream=True`。
+
+### 跨上游差异速查
+
+| 上游 | 推荐分组 | 注意点 |
+| --- | --- | --- |
+| Claude | `Ant-Claude` / `Kiro-Claude-高缓存` / `Claude-Windsurf` | 使用 OpenAI schema 时 `tool_use` 会被翻译；如要原生工具调用建议用 [`/v1/messages`](/api/anthropic) |
+| GPT / Codex | `Codex-Pro` / `Codex-Plus` | 推理类模型（如 `gpt-5.1-high`）通过 `reasoning_effort` 控制 |
+| Gemini | `Ant-Gemini` | 大部分场景兼容，但 `safety_settings` / `system_instruction` 等原生字段不可用，需走 [Gemini 端点](/api/gemini) |
+| Grok | `Grok` | 完全兼容 OpenAI 协议 |
+
+## /v1/images/generations 与 /v1/images/edits
+
+OpenAI Images API 用于 `gpt-image-2` 等绘图模型。详细参数（`size` / `quality` / `output_format` / `output_compression` 等）见 [GPT-Image-2 绘图教程](/paint/gpt-image)。
+
+**关键不同**：ProAPI 的音视频聚合渠道在 OpenAI 标准协议之上做了两层处理：
+
+1. **`size` 字段按 OpenAI 协议翻译**：识别 OpenAI Images API 协议中真实存在的 `size`（`1024x1024` / `1024x1536` / `1536x1024` / `1024x1792` / `1792x1024` / `256x256` / `512x512`），自动映射成对应的比例。**非协议中的 `size` 不识别**，请求走默认值。
+2. **扩展字段 `aspect_ratio` / `quality` / `duration`**：用于覆盖 OpenAI 协议未定义的能力（4K、视频时长、特殊比例等），需要客户端能透传自定义参数（如 OpenAI Python SDK 的 `extra_body`）。
+
+完整规则见 [音视频模型参数映射](/api/media)。
+
+最小调用示例：
+
+```bash
+curl https://newapi.prorisehub.com/v1/images/generations \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "一只柴犬在草地上奔跑，油画风格",
+    "n": 1,
+    "quality": "medium",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+<Callout type="warn" title="图片接口约束">
+  - `n` **只支持 1**，传入大于 1 会报错。
+  - 图片生成不要传 `stream`。
+  - 视频生成虽然也走 OpenAI 风格，但通常 **耗时 60s 以上**，必须做长连接处理，详见 [音视频模型章节](/api/media)。
+</Callout>
+
+## /v1/embeddings
+
+```bash
+curl https://newapi.prorisehub.com/v1/embeddings \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "text-embedding-3-large",
+    "input": ["第一段文本", "第二段文本"]
+  }'
+```
+
+返回结构与 OpenAI 官方一致：
+
+```json
+{
+  "object": "list",
+  "data": [
+    {"object": "embedding", "index": 0, "embedding": [0.0021, -0.0074, ...]}
+  ],
+  "model": "text-embedding-3-large",
+  "usage": {"prompt_tokens": 8, "total_tokens": 8}
+}
+```
+
+## /v1/models
+
+列出当前令牌可见的所有模型。返回结果**只包含已配置定价的模型**，未定价模型即使在分组内也不会出现在列表中。
+
+```bash
+curl https://newapi.prorisehub.com/v1/models \
+  -H "Authorization: Bearer sk-你的令牌"
+```
+
+```json
+{
+  "object": "list",
+  "data": [
+    {"id": "claude-sonnet-4-6", "object": "model", "owned_by": "anthropic"},
+    {"id": "gpt-5.4-mini", "object": "model", "owned_by": "openai"}
+  ],
+  "success": true
+}
+```
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q1：传了 tools 但响应没有 tool_calls？">
+
+上游模型不一定支持函数调用。Claude 系列建议改走 [`/v1/messages`](/api/anthropic) 拿到完整工具调用支持；Gemini 走 [Gemini 端点](/api/gemini)。
+
+</Accordion>
+<Accordion title="Q2：返回的 model 字段不是我传的名字？">
+
+音视频分组会做参数映射（如 `nano-banana` → `firefly-nano-banana-2k-16x9`），返回的是实际后端模型名，**不影响计费**。详见 [音视频模型章节](/api/media)。
+
+</Accordion>
+<Accordion title="Q3：是不是必须用 OpenAI 官方 SDK？">
+
+不是。任何能发 HTTP POST 的客户端（curl、requests、axios、Cherry Studio 等）都可以，SDK 只是封装。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/api/anthropic"
+    icon={<BotIcon />}
+    title="Anthropic 兼容端点"
+    description="需要 Claude 原生 tool_use / thinking / cache_control？走这里。"
+  />
+  <Card
+    href="/api/gemini"
+    icon={<SparklesIcon />}
+    title="Gemini 兼容端点"
+    description="需要 safetySettings / thinkingBudget 等 Gemini 独有字段？走这里。"
+  />
+  <Card
+    href="/api/media"
+    icon={<FilmIcon />}
+    title="音视频模型参数映射"
+    description="nano-banana / sora-2 / veo-3.1 的尺寸、时长、比例映射规则。"
+  />
+</Cards>

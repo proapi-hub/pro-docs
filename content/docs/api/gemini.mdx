@@ -1,0 +1,281 @@
+---
+title: "Gemini 兼容端点"
+description: "通过 /v1beta/models/{model}:generateContent 调用 Google Gemini 原生协议"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { CpuIcon, BotIcon, FilmIcon } from 'lucide-react';
+
+## 总览
+
+ProAPI 提供 Google Gemini 完全兼容的原生端点，适合：
+
+- **Google 官方 SDK**（`@google/genai`、`google-generativeai` Python）直接接入
+- 需要使用 `safety_settings`、`generation_config`、`system_instruction` 等 Gemini 原生字段
+- 需要使用 Google 多模态输入（图片 / PDF / 音视频）
+
+| 端点 | 用途 |
+| --- | --- |
+| `POST /v1beta/models/{model}:generateContent` | 一次性返回完整响应 |
+| `POST /v1beta/models/{model}:streamGenerateContent` | SSE 流式响应 |
+| `POST /v1beta/models/{model}:countTokens` | 离线 token 计数 |
+| `POST /v1beta/models/{model}:embedContent` | 文本向量化 |
+
+<Callout type="info" title="Base URL">
+  Gemini 端点的 base URL 是 `https://newapi.prorisehub.com`。SDK 配置项一般叫 `apiEndpoint` 或 `BASE_URL`。
+</Callout>
+
+<Callout type="warn" title="需要 Gemini 分组">
+  调用 Gemini 必须使用 [`Ant-Gemini`](/token/gemini-grok) 分组令牌（倍率 `x0.1`，性价比极高）。
+</Callout>
+
+## 认证
+
+Gemini 原生协议默认走 query string 鉴权，但 ProAPI 同时兼容 `Authorization` Bearer 头：
+
+| 方式 | 示例 |
+| --- | --- |
+| Query string（Google SDK 默认） | `?key=sk-你的令牌` |
+| Authorization 头（推荐） | `Authorization: Bearer sk-你的令牌` |
+| `x-goog-api-key` 头 | `x-goog-api-key: sk-你的令牌` |
+
+## generateContent
+
+### 最小请求示例
+
+<Tabs items={['cURL', 'Python (google-generativeai)', 'Node.js (@google/genai)']}>
+<Tab value="cURL">
+
+```bash
+curl "https://newapi.prorisehub.com/v1beta/models/gemini-2.5-flash:generateContent" \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {"role": "user", "parts": [{"text": "用一句话解释量子纠缠"}]}
+    ]
+  }'
+```
+
+</Tab>
+<Tab value="Python (google-generativeai)">
+
+```python
+import google.generativeai as genai
+
+genai.configure(
+    api_key="sk-你的令牌",
+    transport="rest",
+    client_options={"api_endpoint": "https://newapi.prorisehub.com"},
+)
+
+model = genai.GenerativeModel("gemini-2.5-flash")
+resp = model.generate_content("用一句话解释量子纠缠")
+print(resp.text)
+```
+
+</Tab>
+<Tab value="Node.js (@google/genai)">
+
+```js
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({
+  apiKey: "sk-你的令牌",
+  httpOptions: { baseUrl: "https://newapi.prorisehub.com" },
+});
+
+const resp = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "用一句话解释量子纠缠",
+});
+console.log(resp.text);
+```
+
+</Tab>
+</Tabs>
+
+### 请求体结构
+
+```json
+{
+  "contents": [
+    {"role": "user", "parts": [{"text": "..."}]}
+  ],
+  "systemInstruction": {
+    "parts": [{"text": "你是简洁的助理"}]
+  },
+  "generationConfig": {
+    "temperature": 0.7,
+    "topP": 0.95,
+    "maxOutputTokens": 2048,
+    "thinkingConfig": {"thinkingBudget": 2000}
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ],
+  "tools": [
+    {"functionDeclarations": [{
+      "name": "get_weather",
+      "description": "获取指定城市的天气",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {"city": {"type": "STRING"}},
+        "required": ["city"]
+      }
+    }]}
+  ]
+}
+```
+
+### 关键字段
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `contents[].role` | string | `user` 或 `model`（注意 Gemini 用 `model` 不是 `assistant`） |
+| `contents[].parts[]` | array | 支持 `text` / `inlineData` / `fileData` / `functionCall` / `functionResponse` |
+| `systemInstruction` | object | 系统提示，独立于 `contents` |
+| `generationConfig.thinkingConfig.thinkingBudget` | int | 思考 token 上限（`gemini-2.5-*` / `gemini-3-*` 系列支持） |
+| `safetySettings` | array | 4 类风险过滤阈值，建议设 `BLOCK_NONE` 避免误杀 |
+| `tools[].functionDeclarations` | array | 函数声明，类型必须用 **大写**（`OBJECT` / `STRING` / `INTEGER`） |
+
+## 多模态输入
+
+### 内联 base64 图片
+
+```json
+{
+  "contents": [{
+    "role": "user",
+    "parts": [
+      {"text": "图里有什么？"},
+      {"inlineData": {"mimeType": "image/jpeg", "data": "/9j/4AAQ..."}}
+    ]
+  }]
+}
+```
+
+### 通过文件 URL
+
+```json
+{
+  "parts": [
+    {"text": "总结这份 PDF"},
+    {"fileData": {"mimeType": "application/pdf", "fileUri": "https://example.com/doc.pdf"}}
+  ]
+}
+```
+
+## 流式响应
+
+把端点尾部从 `:generateContent` 改成 `:streamGenerateContent`，并加 `?alt=sse` 走 SSE：
+
+```bash
+curl "https://newapi.prorisehub.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse" \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{"contents":[{"role":"user","parts":[{"text":"讲个长故事"}]}]}'
+```
+
+返回：
+
+```
+data: {"candidates":[{"content":{"parts":[{"text":"从前"}],"role":"model"}}]}
+data: {"candidates":[{"content":{"parts":[{"text":"有一只"}],"role":"model"}}]}
+...
+```
+
+SDK 用法（Python）：
+
+```python
+for chunk in model.generate_content("讲个长故事", stream=True):
+    print(chunk.text, end="", flush=True)
+```
+
+## countTokens
+
+```bash
+curl "https://newapi.prorisehub.com/v1beta/models/gemini-2.5-flash:countTokens" \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{"contents":[{"role":"user","parts":[{"text":"测试一下长度"}]}]}'
+```
+
+```json
+{"totalTokens": 6}
+```
+
+## embedContent
+
+```bash
+curl "https://newapi.prorisehub.com/v1beta/models/gemini-embedding-001:embedContent" \
+  -H "Authorization: Bearer sk-你的令牌" \
+  -H "Content-Type: application/json" \
+  -d '{"content":{"parts":[{"text":"待向量化的文本"}]}}'
+```
+
+## 与 OpenAI 兼容端点的区别
+
+| 场景 | OpenAI 兼容（`/v1/chat/completions`） | Gemini 原生（`/v1beta/...`） |
+| --- | --- | --- |
+| 调用方式 | 跟 GPT / Claude 完全一致的请求体 | Google 官方 schema |
+| `system` 提示 | `messages` 数组里第一条 `system` | 顶层 `systemInstruction` |
+| 工具调用 | `tools[].function.parameters` | `tools[].functionDeclarations[].parameters`（类型大写） |
+| safety 过滤 | ❌ 无法控制 | ✅ `safetySettings` |
+| thinking 控制 | ❌ 无 | ✅ `generationConfig.thinkingConfig.thinkingBudget` |
+| 多模态格式 | OpenAI vision content blocks | `inlineData` / `fileData` |
+
+<Callout type="info" title="如何选择">
+  使用 Google 官方 SDK 或需要 Gemini 独有能力时走 Gemini 端点；通用客户端（Cherry Studio、Cline 等）走 OpenAI 兼容端点更简单。
+</Callout>
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q1：Gemini SDK 报 403？">
+
+检查令牌分组是否为 `Ant-Gemini`（或其他包含 Gemini 模型的分组）。
+
+</Accordion>
+<Accordion title="Q2：返回 Request contains an invalid argument？">
+
+通常是把 OpenAI 格式的请求体发给了 Gemini 端点。Gemini 用 `contents` / `parts`，不是 `messages` / `content`。
+
+</Accordion>
+<Accordion title="Q3：safetySettings 不生效？">
+
+Pro 上游会优先使用渠道侧的 safety 配置；如确实需要更宽松的过滤，请联系管理员。
+
+</Accordion>
+<Accordion title="Q4：Gemini 视频生成（Veo）走这里吗？">
+
+**不走**。Veo 通过音视频聚合渠道接入，使用 OpenAI 风格 `/v1/chat/completions` 或 `/v1/images/generations` 调用，参数映射规则见 [音视频模型章节](/api/media)。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/api/openai"
+    icon={<CpuIcon />}
+    title="OpenAI 兼容端点"
+    description="第三方客户端通用接入方式（兼容大多数 OpenAI SDK）。"
+  />
+  <Card
+    href="/api/anthropic"
+    icon={<BotIcon />}
+    title="Anthropic 兼容端点"
+    description="Claude 原生协议，支持 tool_use / thinking / cache_control。"
+  />
+  <Card
+    href="/api/media"
+    icon={<FilmIcon />}
+    title="音视频模型参数映射"
+    description="Veo 视频生成与图像模型的尺寸/时长参数映射规则。"
+  />
+</Cards>

@@ -1,0 +1,414 @@
+---
+title: "Claude Code 相关问题"
+description: "Claude Code CLI 常见问题、排错与高效用法"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { TerminalIcon, HelpCircleIcon, MonitorIcon } from 'lucide-react';
+
+## 章节导读
+
+本页覆盖 Claude Code CLI 的日常排错与高效用法。**配置基础请先阅读** [Claude Code 配置](/cli/claude-code) 或 [CC-Switch 接入](/ccswitch/claude-code)。
+
+## 配置指南
+
+### 在 VSCode Claude Code 插件中使用 ProAPI
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+1. 确保你已完成 [环境检查](/cli/env-check)，且 `claude` CLI 已能正常对话。
+2. 按 <kbd>Win</kbd> + <kbd>R</kbd>，输入以下路径打开 Claude Code 配置目录：
+
+   ```bash
+   %userprofile%\.claude
+   ```
+
+3. 如目录中没有 `config.json`，请手动创建。该文件用于配置 VSCode 插件行为。
+
+4. 写入以下内容并保存：
+
+   ```json
+   {
+     "primaryApiKey": "ProApi"
+   }
+   ```
+
+5. 重启 VSCode 后插件即可使用 ProAPI。
+
+</Tab>
+<Tab value="macOS">
+
+1. 确保你已完成 [环境检查](/cli/env-check)，且 `claude` CLI 已能正常对话。
+2. 在访达中按 <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>，输入路径：
+
+   ```bash
+   ~/.claude
+   ```
+
+3. 如目录中没有 `config.json`，请手动创建。该文件用于配置 VSCode 插件行为。
+
+4. 写入以下内容并保存：
+
+   ```json
+   {
+     "primaryApiKey": "ProApi"
+   }
+   ```
+
+5. 重启 VSCode 后插件即可使用 ProAPI。
+
+</Tab>
+</Tabs>
+
+### Claude Code 无法连接到 Anthropic 服务
+
+<Callout type="info" title="首次配置时直接照做">
+  如果你是首次配置被引导到这里，请直接按下方命令操作即可。
+</Callout>
+
+使用 npm 安装完 `claude` 后，在命令行启动出现如下错误：
+
+```text
+Unable to connect to Anthropic services
+Failed to connect to api.anthropic.com: ERR BAD REQUEST
+Please check your internet connection and network settings.
+Note: Claude Code might not be available in your country. Check supported countries at
+https://anthropic.com/supported-countries
+```
+
+或初次配置时出现需要登录 Anthropic 账号的界面。这是因为 Claude Code 默认要求 onboarding 流程，需手动跳过：
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+1. 按 <kbd>Win</kbd> + <kbd>R</kbd>，输入 `cmd` 打开命令行。
+2. 运行：
+
+   ```bash
+   powershell -Command "$f='%USERPROFILE%\.claude.json';$j=Get-Content $f|ConvertFrom-Json;$j|Add-Member -NotePropertyName 'hasCompletedOnboarding' -NotePropertyValue $true -Force;$j|ConvertTo-Json|Set-Content $f"
+   ```
+
+3. 重启 Claude Code CLI。
+
+</Tab>
+<Tab value="macOS">
+
+1. 打开「终端」程序。
+2. 运行（依赖 `jq`）：
+
+   ```bash
+   jq '. + {"hasCompletedOnboarding": true}' ~/.claude.json > /tmp/tmp.json && mv /tmp/tmp.json ~/.claude.json
+   ```
+
+   <Callout type="info" title="未安装 jq">
+     提示 `command not found: jq`？运行 `brew install jq` 安装。
+   </Callout>
+
+3. 重启 Claude Code CLI。
+
+</Tab>
+</Tabs>
+
+### 切换回 200K 上下文并禁用非必要流量
+
+如果你希望将 Claude Code 从 1M 上下文切换回 200K 上下文，并关闭非必要请求与终端标题变更，可以在 `settings.json` 的 `env` 中加入以下配置：
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+1. 按 <kbd>Win</kbd> + <kbd>R</kbd>，输入：
+
+   ```bash
+   %userprofile%\.claude
+   ```
+
+2. 打开或创建 `settings.json`，确认 `env` 包含：
+
+   ```json
+   {
+     "env": {
+       "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
+       "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+       "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"
+     }
+   }
+   ```
+
+</Tab>
+<Tab value="macOS">
+
+1. 在访达按 <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>，输入：
+
+   ```bash
+   ~/.claude
+   ```
+
+2. 打开或创建 `settings.json`，确认 `env` 包含：
+
+   ```json
+   {
+     "env": {
+       "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
+       "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+       "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"
+     }
+   }
+   ```
+
+</Tab>
+</Tabs>
+
+## 常用命令
+
+| 命令 | 功能说明 |
+| --- | --- |
+| `claude` | 在当前目录启动交互式 REPL，对话式使用 Claude Code |
+| `claude "解释这个项目"` | 启动 REPL 并带上初始问题，一进来就让 Claude 分析项目 |
+| `claude -p "解释这个函数"` | 使用 print 模式一次性问答，输出后退出，便于脚本 / CI 调用 |
+| `cat logs.txt \| claude -p "总结错误"` | 管道喂入文件或命令输出做总结、分析 |
+| `claude -c` | 继续当前目录最近一次会话，沿用原上下文 |
+| `claude -c -p "检查类型错误"` | 在最近会话上下文中执行一次性请求 |
+| `claude -r "abc123" "把这个 PR 完成"` | 通过会话 ID 恢复指定会话并执行新任务 |
+| `claude update` | 将 Claude Code CLI 更新到最新版本 |
+| `claude mcp` | 管理 MCP 服务器，让 Claude 访问外部数据源 |
+| `claude --add-dir ../apps ../lib` | 为 Claude 添加可访问的额外代码目录 |
+| `claude --model sonnet` | 指定会话使用的模型（如 `sonnet` / `opus` 或具体模型名） |
+| `claude --verbose` | 打开详细日志，显示工具调用与内部步骤 |
+| `claude --continue` | 载入当前目录最近一次会话，即"继续上次对话" |
+| `claude --resume abc123 "继续修这个 Bug"` | 通过会话 ID 在任意目录恢复 |
+| `claude --append-system-prompt "始终用 TS"` | 在默认系统提示后追加自定义规则 |
+| `claude -p "生成接口文档" --output-format json` | 用 JSON 格式输出，便于脚本解析 |
+| `claude --dangerously-skip-permissions` | 跳过权限确认（高风险，仅在完全信任环境使用） |
+
+## 常见问题
+
+<Accordions>
+<Accordion title="如何在 settings.json 中指定默认模型与小模型？">
+
+当第三方分组提供的模型名与官方不同时（如自定义模型），需要让 `claude` 默认使用并把 Haiku 类小任务也指向同一服务。在 `~/.claude/settings.json` 的 `env` 块写入：
+
+```json
+{
+  "env": {
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-haiku-4-5-20251001",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001"
+  }
+}
+```
+
+实际可用模型名以 [令牌与分组](/token/intro) 模型广场为准。
+
+</Accordion>
+
+<Accordion title="如何添加 MCP 服务器？">
+
+接入 GitHub / Filesystem / Context7 等 MCP，推荐用 `claude mcp add`：
+
+```bash
+# HTTP 远程
+claude mcp add --transport http context7 https://mcp.context7.com/mcp
+
+# 本地 stdio
+claude mcp add --transport stdio github -- npx -y @modelcontextprotocol/server-github
+```
+
+作用域选项：
+
+- `--scope user` — 跨项目共享
+- `--scope project` — 写入 `.mcp.json`，团队共享
+
+</Accordion>
+
+<Accordion title="自定义 slash command 与 sub-agent 放在哪？">
+
+- **个人级**：`~/.claude/commands/<name>.md`、`~/.claude/agents/<name>.md`
+- **项目级**：`.claude/commands/<name>.md`、`.claude/agents/<name>.md`
+
+Markdown 文件头部可用 frontmatter 设置：
+
+```markdown
+---
+description: 提交当前 git 变更
+allowed-tools: Bash, Read
+model: sonnet
+argument-hint: <提交信息>
+---
+
+请按 Conventional Commit 规范提交…
+```
+
+</Accordion>
+
+<Accordion title="第三方 API 报 401 Invalid bearer token？">
+
+配置了 `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` 后仍 401，按以下顺序排查：
+
+1. 系统环境变量与 `settings.json` 中是否同时存在 `ANTHROPIC_API_KEY` 与 `ANTHROPIC_AUTH_TOKEN`，删除多余的。
+2. 之前登录过官方 OAuth？执行 `/logout` 后重启。
+3. `~/.claude.json` 中残留旧 OAuth 信息，清理 `oauthAccount` 字段后重试。
+4. 确认 `ANTHROPIC_BASE_URL` 末尾**不要带** `/v1`。
+
+</Accordion>
+
+<Accordion title="切换 CC-Switch 或多供应商后旧 token 仍然生效？">
+
+依次清理：
+
+1. 临时清空环境变量：
+
+   ```bash
+   unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
+   ```
+
+2. 删除 shell rc（`.zshrc` / `.bashrc`）中残留的 `export ANTHROPIC_*`。
+3. 编辑 `~/.claude.json`，移除 `oauthAccount` 与项目级 `apiKeyHelper` 字段。
+4. 重启终端再次运行 `claude`。
+
+</Accordion>
+
+<Accordion title="长任务被 auto-compact 截断、丢失早期上下文？">
+
+Claude Code 在上下文用尽前会自动压缩历史，可能丢失最初的需求。建议：
+
+- **手动 compact** 并保留关键指令：`/compact 保留 API 规范与 TODO`
+- **核心约束写进 `CLAUDE.md`** 而非聊天历史，压缩后仍可读取
+- **查看剩余配额**：`/context`
+- **任务拆分** 避免单会话过长
+
+</Accordion>
+
+<Accordion title="Windows CMD / PowerShell 显示乱码、输入框越界？">
+
+按以下顺序处理：
+
+1. 改用 **Windows Terminal + PowerShell 7**（强烈推荐）。
+2. 终端中执行 `chcp 65001` 切到 UTF-8。
+3. 或直接在 **WSL2** 内安装运行 `claude`，规避 Windows 终端兼容性问题。
+4. 升级到最新 `claude` 版本：`claude update`。
+
+</Accordion>
+
+<Accordion title="如何配置 Hooks 在工具调用前后自动执行脚本？">
+
+在 `.claude/settings.json` 添加：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "~/.claude/scripts/guard.sh"}
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {"type": "command", "command": "git branch --show-current"}
+        ]
+      }
+    ]
+  }
+}
+```
+
+`PreToolUse` 脚本退出码：
+
+- `2` — 阻止本次工具调用
+- `0` — 放行
+
+</Accordion>
+
+<Accordion title="permissions.allow / deny 不生效？">
+
+- **文件位置**：个人放 `.claude/settings.local.json`，团队共享放 `.claude/settings.json`。
+- **评估顺序**：`deny → ask → allow`，deny 始终优先。
+- **语法示例**：
+
+  ```json
+  {
+    "permissions": {
+      "allow": ["Bash(git *)", "Edit(./src/**)"],
+      "deny": ["Bash(git push *)", "Read(./.env)"]
+    }
+  }
+  ```
+
+</Accordion>
+
+<Accordion title="企业证书 / 自签证书 导致 unable to verify the first certificate？">
+
+公司网络常见。导出企业根证书为 PEM，然后：
+
+```bash
+export NODE_EXTRA_CA_CERTS=/path/to/ca.pem
+```
+
+macOS 上 Claude Code 2.1.17+ 改用 Bun，需同时加：
+
+```bash
+export NODE_OPTIONS="--use-openssl-ca"
+```
+
+写入 `~/.zshrc` 或 `~/.bashrc` 持久化。
+
+</Accordion>
+
+<Accordion title="如何关闭遥测与终端标题修改？">
+
+`settings.json.env` 加：
+
+```json
+{
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="挂了一晚后突然全部 401？">
+
+可能原因与对策：
+
+1. **配置变更未生效** — `settings.json` 修改后需重启 CLI 进程。
+2. **OAuth 会话过期** — 执行 `/logout` 再 `/login`。
+3. **令牌被禁用** — 到 ProAPI 后台「令牌管理」检查状态。
+4. **本机时间漂移** — 校准系统时间。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/faq/codex"
+    icon={<TerminalIcon />}
+    title="Codex 相关问题"
+    description="Codex CLI 配置、常见报错与高效用法。"
+  />
+  <Card
+    href="/faq/gemini"
+    icon={<HelpCircleIcon />}
+    title="Gemini 相关问题"
+    description="Gemini CLI 与 Cline / Roo Code 接入排错。"
+  />
+  <Card
+    href="/cli/claude-code"
+    icon={<MonitorIcon />}
+    title="Claude Code 配置"
+    description="基础配置流程与 settings.json 模板。"
+  />
+</Cards>

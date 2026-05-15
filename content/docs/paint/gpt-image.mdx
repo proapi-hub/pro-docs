@@ -1,0 +1,115 @@
+---
+title: "GPT-Image-2 绘图教程"
+description: "在 Cherry Studio 中使用 ProAPI 的 gpt-image-2 模型绘图"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 前置准备
+
+`gpt-image-2` 属于 **音视频模型** 分组。参照 [创建令牌分组](/#%E8%BF%9B%E5%85%A5%E4%BB%A4%E7%89%8C%E7%AE%A1%E7%90%86) 教程创建令牌时，**分组选择 `音视频模型`**。
+
+<Callout type="info" title="想直接调用 API？">
+本页只覆盖 Cherry Studio 客户端的图形界面操作流程。如果你是开发者，需要查看接口规范、参数、请求示例与返回格式，请直接看：
+
+- [OpenAI 兼容端点文档](/api/openai) — `/v1/images/generations` 与 `/v1/images/edits` 完整字段
+- [音视频模型参数映射](/api/media) — `size` / `aspect_ratio` / `quality` 等参数到上游模型的映射规则
+</Callout>
+
+***
+
+## 在 Cherry Studio 中使用
+
+<Callout type="warn" title="必须用「绘画」应用，不要在对话窗口里调">
+`gpt-image-2` 的请求与响应是 OpenAI Images 协议（返回 `b64_json`），与 Cherry Studio 的聊天接口不兼容。**只能通过 Cherry Studio 的「绘画」应用调用**；在普通对话框里直接发 `gpt-image-2` 会触发 `Invalid JSON response` 错误。
+
+正确的端点类型设置在第 7 步。
+</Callout>
+
+1. 参照 [创建令牌分组](/#%E8%BF%9B%E5%85%A5%E4%BB%A4%E7%89%8C%E7%AE%A1%E7%90%86) 创建 `音视频模型` 分组的令牌，复制 API Key 到剪切板。
+2. 访问 [Cherry Studio](https://www.cherry-ai.com/) 官网下载并安装客户端。
+3. 打开 Cherry Studio，点击左下角设置按钮，进入 `模型服务`，点击底部 `添加` 按钮新增提供商。
+
+![03](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/03.webp)
+
+在添加提供商窗口中填写提供商名称（例如 `proapi`），`提供商类型` 选择 `New API`，点击 `确定`。
+
+![image-20260515170019526](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515170019526.png)
+
+5. 在左侧列表中找到刚添加的提供商，把第 1 步复制的 API Key 填入 `API 密钥`，`API 地址` 填写 `https://newapi.prorisehub.com`。
+
+![image-20260515191053765](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515191053765.png)
+
+6. 点击模型区域右侧的 `获取模型列表`，刷新后添加 `gpt-image-2` 模型。
+7. **关键步骤**：点击 `gpt-image-2` 右侧的编辑按钮，把 `端点类型` 设置为 `图像生成（OpenAI）`，保存。**不做这一步在对话窗口里会直接报 `Invalid JSON response`**。
+
+![image-20260515191113356](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515191113356.png)
+
+8. 回到首页，点击顶部 `+` 按钮，在应用列表中选择 `绘画`。
+
+![PixPin_2026-05-15_19-11-34](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/PixPin_2026-05-15_19-11-34.png)
+
+![image-20260515191159150](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515191159150.png)
+
+
+9. 进入绘画页面后，左侧 `提供商` 选择刚才添加的供应商，`模型` 选择 `gpt-image-2`。首次使用建议把 `图片尺寸`、`质量`、`敏感度` 等选项保持为 `自动`，`生成数量` 保持为 `1`。
+
+![image-20260515191230076](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515191230076.png)
+
+10. 文生图：顶部选择 `绘图` 模式，输入提示词后点击发送。
+11. 图生图：顶部切换到 `编辑` 模式，在左侧 `输入图片` 中上传参考图，输入修改要求后发送。
+
+
+
+![image-20260515191456162](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515191456162.png)
+
+
+
+
+
+
+
+<Callout type="info" title="size 字段会被 ProAPI 自动识别">
+Cherry Studio 绘画应用里的 `图片尺寸` 实质上就是 OpenAI 协议的 `size` 字段。ProAPI 已识别 OpenAI 官方协议中的 7 个标准 size 值（`1024x1024` / `1024x1536` / `1536x1024` / `1024x1792` / `1792x1024` / `256x256` / `512x512`），自动映射到对应的比例。详细规则见 [音视频模型参数映射](/api/media)。
+</Callout>
+
+***
+
+## 可能出现的问题
+
+如果 Cherry Studio 弹出 `Failed to fetch`，通常是请求连接被中断，可能与本机代理或网络环境有关。请先检查代理设置，确认 Cherry Studio 能正常访问 `https://newapi.prorisehub.com` 后再重试。
+
+![](/assets/image/Paint/gpt-image-2/07.webp)
+
+如果 Cherry Studio 弹出 `Unexpected token '<', "<html><h"... is not valid JSON`，通常是请求过程中收到了 Cloudflare 等页面内容，客户端按 JSON 解析时显示异常。直接重试或稍后再生成即可。
+
+![](/assets/image/Paint/gpt-image-2/08.webp)
+
+如果弹出 `AI_APICallError: Invalid JSON response` 或 `Zod ... b64_json`，说明你在**对话框模式**调用了 `gpt-image-2`。请回到模型编辑窗口，将 `端点类型` 改为 `图像生成（OpenAI）`，然后只在 `绘画` 应用里使用此模型。
+
+***
+
+## 特别注意：长连接与代理设置
+
+无论是直接通过 API 调用，还是在 Cherry Studio 等客户端程序中使用 `gpt-image-2`，图片生成请求通常都比普通聊天请求耗时更久，尤其是使用编辑模式、高清质量或高分辨率尺寸时。如果本机代理、网络工具或中间网关对长连接有限制，可能会在 60 秒左右主动断开连接，表现为 API 请求超时、没有返回内容，或客户端提示 `Failed to fetch`。
+
+下面以 Cherry Studio 的编辑模式为例，长连接中断时程序侧通常会直接弹出 `Failed to fetch`；在开发者工具中，也可以看到 `edits` 请求停在 1 分钟左右。直接调用 API 时虽然界面提示不同，但问题本质相同，都是连接在图片生成完成前被中途断开。
+
+![](/assets/image/Paint/gpt-image-2/09.webp)
+
+如果确认是代理导致连接被中断，建议将本站域名 `newapi.prorisehub.com` 加入代理工具的直连或白名单规则，让访问 ProAPI 时不再经过代理。不同代理软件的设置入口可能不同，核心是添加类似 `domain:newapi.prorisehub.com` 的域名规则。
+
+![](/assets/image/Paint/gpt-image-2/10.webp)
+
+
+
+***
+
+## 下一步
+
+<Cards>
+  <Card title="Cherry Studio 入门" href="/paint/banana" description="Cherry Studio 客户端的基础配置与 Nano Banana 绘图实战" />
+  <Card title="OpenAI 兼容端点" href="/api/openai" description="`/v1/images/generations` 与 `/v1/images/edits` 完整 API 参考" />
+  <Card title="音视频模型参数映射" href="/api/media" description="size / aspect_ratio / quality / duration 全部规则" />
+</Cards>

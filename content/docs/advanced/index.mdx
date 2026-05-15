@@ -1,0 +1,39 @@
+---
+title: "进阶用法"
+description: "Claude Desktop、AionUI、OpenCode、OpenClaw 等第三方客户端与特殊接入方案"
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { MonitorIcon, LayoutDashboardIcon, ServerIcon } from 'lucide-react';
+
+## 章节概览
+
+本章收录 ProAPI 在 **官方 Claude Code / Codex / Gemini CLI 之外** 的第三方桌面客户端与服务器端接入方案。如果你只是想快速跑通 CLI，请优先阅读 [CLI 配置](/cli)。
+
+<Callout type="info" title="阅读顺序建议">
+  各教程相互独立，可按需选读。**首次使用** ProAPI 的用户建议先完成 [快速开始](/) 并创建对应分组令牌后再进入本章。
+</Callout>
+
+## 教程导航
+
+<Cards>
+  <Card
+    href="/advanced/claude-desktop"
+    icon={<MonitorIcon />}
+    title="Claude Desktop"
+    description="Anthropic 官方桌面客户端 + 第三方接口接入。"
+  />
+  <Card
+    href="/advanced/aion-ui"
+    icon={<LayoutDashboardIcon />}
+    title="AionUI"
+    description="多模型可视化 GUI，统一管理 Claude / Gemini / Codex。"
+  />
+  <Card
+    href="/advanced/openclaw"
+    icon={<ServerIcon />}
+    title="OpenClaw"
+    description="Linux 服务器 / macOS 端，含 Telegram Bot 接入。"
+  />
+</Cards>

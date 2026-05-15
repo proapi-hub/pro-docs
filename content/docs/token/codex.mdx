@@ -1,0 +1,78 @@
+---
+title: "GPT / Codex 系列分组"
+description: "Codex-Pro、Codex-Plus 两个 GPT 分组的来源、倍率与适用场景"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## GPT / Codex 系列分组
+
+两个 GPT 分组都面向 Codex CLI，区别在于号池来源与倍率。
+
+<Callout type="info" title="怎么选">
+- 追求**质量与稳定**：选 `Codex-Pro`
+- 追求**性价比**（日常编程首选）：选 `Codex-Plus`
+- 各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
+</Callout>
+
+<Tabs items={['Codex-Pro', 'Codex-Plus']}>
+<Tab value="Codex-Pro">
+
+- **分组介绍：**
+
+  - Codex 官方**纯血 Pro 账号**中转，来源于 OpenAI 官方 Pro 订阅账号，是 GPT-5 系列中质量与稳定性最高的一档。
+
+- **计费倍率：** `x0.3`
+
+- **适用 CLI / 工具：**
+
+  - Codex CLI（推荐）
+  - OpenCode 等第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `gpt-5.5`
+  - `gpt-5.4`
+  - `gpt-5.4-mini`
+  - `gpt-5.3-codex`
+  - `gpt-5.2-pro`
+  - `gpt-5.2`
+
+</Tab>
+<Tab value="Codex-Plus">
+
+- **分组介绍：**
+
+  - Codex 官方 **Team 和 Plus 账号**组成的号池，倍率极低（`x0.08`），是**性价比首选**。日常编程任务推荐使用此分组。
+
+- **计费倍率：** `x0.08`
+
+- **适用 CLI / 工具：**
+
+  - Codex CLI（推荐）
+  - OpenCode 等第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `gpt-5.5`
+  - `gpt-5.4`
+  - `gpt-5.4-mini`
+  - `gpt-5.3-codex`
+  - `gpt-5.3-codex-spark`
+  - `gpt-5.2`
+  - `gpt-image-2`
+
+</Tab>
+</Tabs>
+
+***
+

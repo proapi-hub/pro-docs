@@ -1,0 +1,14 @@
+{
+  "title": "ProAPI 文档",
+  "pages": [
+    "index",
+    "token",
+    "api",
+    "ccswitch",
+    "cli",
+    "paint",
+    "advanced",
+    "faq",
+    "tos"
+  ]
+}

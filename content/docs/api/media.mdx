@@ -1,0 +1,449 @@
+---
+title: "音视频模型参数映射"
+description: "音视频模型的 quality / aspect_ratio / duration 参数如何被 ProAPI 翻译成上游实际模型 ID，附完整调用示例"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { CpuIcon, BookOpenIcon, PaletteIcon } from 'lucide-react';
+
+## 为什么需要这一章
+
+音视频模型有一个 **ProAPI 独有** 的设计：你在请求里只用传一个简洁的模型名（如 `nano-banana`），再用 `quality`、`aspect_ratio`、`duration` 这些**业务参数**控制具体输出。系统会把这些参数自动拼接到真实的上游模型 ID（如 `firefly-nano-banana-2k-16x9`）。
+
+这意味着：
+
+- **你不需要记忆几十个上游模型名**，只需要知道 `quality=high` 比 `quality=low` 清晰度更高。
+- **计费按你传的 `model` 字段固定**，不会因为切换分辨率 / 时长而被加价。
+- 调用方式保持 OpenAI 风格，第三方客户端无需特殊适配。
+
+<Callout type="warn" title="本章覆盖的模型">
+  本章规则**仅适用于音视频聚合渠道**（`音视频模型` 分组）当前在线的 11 个模型：
+
+  - 图像：`nano-banana` / `nano-banana-2` / `nano-banana-pro` / `gpt-image-2`
+  - 视频：`sora-2` / `sora-2-pro` / `veo-3.1` / `veo-3.1-fast` / `veo-3.1-ref` / `kling-3.0` / `kling-o3`
+
+  其他渠道（如 Adobe Firefly 之外的 Banana 池）不适用本规则。
+</Callout>
+
+## 调用端点
+
+| 模型类型 | 推荐端点 | 备选 |
+| --- | --- | --- |
+| 图像（文生图） | `POST /v1/images/generations` | `POST /v1/chat/completions` |
+| 图像（图生图 / 编辑） | `POST /v1/images/edits` | – |
+| 视频 | `POST /v1/chat/completions` | – |
+
+<Callout type="info" title="视频返回格式">
+  视频生成的返回内容是一段包含视频 URL 的 Markdown / HTML：
+
+  ```html
+  <video src='https://adb.zifumh.cn/generated/xxx.mp4' controls></video>
+  ```
+
+  直接把 `src` 提取出来下载即可。
+</Callout>
+
+## 通用参数
+
+ProAPI 同时支持两套参数方式：
+
+- **方式 A — OpenAI 官方协议 `size` 字段**：与 OpenAI Images API 严格兼容，凡是发送官方协议中的 `size` 值都会自动映射到对应的比例。
+- **方式 B — ProAPI 扩展字段**：直接传 `aspect_ratio` / `quality` / `duration`，控制更精细，覆盖 OpenAI 协议未定义的能力（如 4K、视频时长、自定义比例等）。
+
+两种方式可以混用；同时传时，**`size` 派生的 `aspect_ratio` 会覆盖你显式传的 `aspect_ratio`**（建议只用一种）。
+
+### 方式 A — OpenAI 官方 `size` 字段
+
+ProAPI 严格按照 OpenAI Images API 协议接受 `size`，只翻译官方协议中真实存在的尺寸：
+
+| `size` 值 | 自动映射 `aspect_ratio` | 出自的 OpenAI 模型 |
+| --- | --- | --- |
+| `1024x1024` | `1:1` | gpt-image-2 / dall-e-2 / dall-e-3 |
+| `1024x1536` | `2:3` | gpt-image-2 |
+| `1536x1024` | `3:2` | gpt-image-2 |
+| `1024x1792` | `9:16` | dall-e-3 |
+| `1792x1024` | `16:9` | dall-e-3 |
+| `256x256` | `1:1` | dall-e-2 |
+| `512x512` | `1:1` | dall-e-2 |
+
+<Callout type="info" title="只有官方协议中的尺寸会被识别">
+  ProAPI 不会发明 `3840x2160`、`2048x2048` 之类的「自创尺寸」。如果客户端传了非官方协议中的 `size` 值，将走默认值（`-2k-16x9`）。要控制 4K、自定义比例、视频时长等 OpenAI 协议未定义的能力，请走 **方式 B**。
+
+  `size` 字段是否能在你的客户端里调出来，**取决于客户端自身的 UI**：例如 Cherry Studio 在「绘画」应用里有 `图片尺寸` 选项，但在普通聊天模式里就没有。
+</Callout>
+
+### 方式 B — ProAPI 扩展字段
+
+| 参数 | 类型 | 适用模型 | 取值 | 默认值 |
+| --- | --- | --- | --- | --- |
+| `quality` | string | 图像全部 + veo-3.1 全系 | `low` / `standard` / `medium` / `hd` / `high` / `ultra` | `medium` |
+| `aspect_ratio` | string | 全部 | `1:1` / `16:9` / `9:16` / `4:3` / `3:4` / `5:4` / `4:5` / `3:2` / `2:3` / `21:9` / `1:4` / `4:1` / `1:8` / `8:1` | `16:9` |
+| `duration` | integer | 视频全部 | 不同模型不同（见下表） | 取该模型最常用值 |
+
+这些字段不在 OpenAI 协议中，需要客户端支持透传自定义参数（OpenAI Python SDK 的 `extra_body`、Node SDK 的 `body` 透传等）。
+
+## 图像模型详解
+
+### 参数 → 后端模型映射
+
+**`quality` → 分辨率：**
+
+| `quality` 取值 | 后端分辨率后缀 | 说明 |
+| --- | --- | --- |
+| `low` / `standard` | `-1k` | 1K 草图，最快 |
+| `medium` / `hd` | `-2k`（默认） | 2K 通用 |
+| `high` / `ultra` | `-4k` | 4K 高清 |
+
+**`aspect_ratio` → 比例后缀：**
+
+| 模型 | 支持的 `aspect_ratio` |
+| --- | --- |
+| `nano-banana` | `1:1` `16:9` `9:16` `4:3` `3:4` |
+| `nano-banana-pro` | 同上 |
+| `nano-banana-2` | 同上 + `1:4` `4:1` `1:8` `8:1` |
+| `gpt-image-2` | `1:1` `5:4` `4:5` `9:16` `21:9` `16:9` `3:2` `2:3` `4:3` `3:4` |
+
+未传 `aspect_ratio` 时默认 `16:9`；未传 `quality` 时默认 `medium`（即 `-2k`）。
+
+### 拼接示例
+
+**通过扩展字段（方式 B）：**
+
+| 你发的请求 | 实际命中后端模型 |
+| --- | --- |
+| `model=nano-banana` | `firefly-nano-banana-2k-16x9` |
+| `model=nano-banana, quality=high` | `firefly-nano-banana-4k-16x9` |
+| `model=nano-banana-pro, aspect_ratio=9:16, quality=low` | `firefly-nano-banana-pro-1k-9x16` |
+| `model=gpt-image-2, aspect_ratio=21:9, quality=ultra` | `firefly-gpt-image-4k-21x9` |
+| `model=nano-banana-2, aspect_ratio=8:1` | `firefly-nano-banana2-2k-8x1` |
+
+**通过 OpenAI 官方 `size`（方式 A）：**
+
+| 你发的请求 | 实际命中后端模型 |
+| --- | --- |
+| `model=nano-banana, size=1024x1024` | `firefly-nano-banana-2k-1x1` |
+| `model=nano-banana, size=1024x1792` | `firefly-nano-banana-2k-9x16` |
+| `model=gpt-image-2, size=1536x1024` | `firefly-gpt-image-2k-3x2` |
+| `model=nano-banana-pro, size=1024x1024, quality=low` | `firefly-nano-banana-pro-1k-1x1` |
+| `model=gpt-image-2, size=非官方值` | `firefly-gpt-image-2k-16x9`（走默认） |
+
+### 文生图调用
+
+```bash
+curl https://newapi.prorisehub.com/v1/images/generations \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana-pro",
+    "prompt": "一只柴犬在富士山下奔跑，浮世绘风格",
+    "n": 1,
+    "quality": "high",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+返回：
+
+```json
+{
+  "created": 1778830784,
+  "data": [{
+    "url": "https://adb.zifumh.cn/generated/9af4accb...png",
+    "revised_prompt": "..."
+  }]
+}
+```
+
+<Callout type="warn" title="提示词长度">
+  `prompt` **至少 3 个字符**，过短会被上游 reject 并返回 `400 Validation error`。
+</Callout>
+
+## 视频模型详解
+
+### duration / aspect_ratio / quality 矩阵
+
+| 模型 | `duration` 可选值 | 默认 `duration` | `aspect_ratio` 可选 | `quality` 可选 |
+| --- | --- | --- | --- | --- |
+| `sora-2` | `4` / `8` / `12` | `8` | `16:9` `9:16` | – |
+| `sora-2-pro` | `4` / `8` / `12` | `8` | `16:9` `9:16` | – |
+| `kling-3.0` | `5` / `10` / `15` | `10` | `16:9` `9:16` | – |
+| `kling-o3` | `5` / `15` | `15` | `16:9` `9:16` | – |
+| `veo-3.1` | `4` / `6` / `8` | `8` | `16:9` `9:16` | `low`/`standard`→720p，其它→1080p |
+| `veo-3.1-fast` | `4` / `6` / `8` | `8` | `16:9` `9:16` | 同上 |
+| `veo-3.1-ref` | `4` / `6` / `8` | `8` | `16:9` `9:16` | 同上 |
+
+### 拼接示例
+
+| 你发的请求 | 实际命中后端模型 |
+| --- | --- |
+| `model=sora-2` | `firefly-sora2-8s-16x9` |
+| `model=sora-2-pro, duration=12, aspect_ratio=9:16` | `firefly-sora2-pro-12s-9x16` |
+| `model=veo-3.1, quality=low` | `firefly-veo31-8s-16x9-720p` |
+| `model=veo-3.1-fast, duration=4, quality=high` | `firefly-veo31-fast-4s-16x9-1080p` |
+| `model=kling-3.0, duration=15` | `firefly-kling3-15s-16x9` |
+| `model=kling-o3, aspect_ratio=9:16` | `firefly-kling-o3-15s-9x16` |
+
+### 视频调用（OpenAI Chat 风格）
+
+```bash
+curl https://newapi.prorisehub.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "sora-2",
+    "messages": [
+      {"role": "user", "content": "一只橘猫在阳台上看夕阳，电影感长镜头"}
+    ],
+    "aspect_ratio": "16:9",
+    "duration": 8,
+    "stream": false
+  }'
+```
+
+返回：
+
+```json
+{
+  "choices": [{
+    "finish_reason": "stop",
+    "message": {
+      "role": "assistant",
+      "content": "```html\n<video src='https://adb.zifumh.cn/generated/xxx.mp4' controls></video>\n```"
+    }
+  }],
+  "model": "firefly-sora2-8s-16x9"
+}
+```
+
+<Callout type="warn" title="kling-3.0 必须传参考图">
+  `kling-3.0` 是图生视频（image-to-video）模型，**纯文本调用会失败**：
+
+  ```json
+  {"error_code":"bad_request","message":"reference_images: at least 1 item(s) with usage='frame' required, got 0."}
+  ```
+
+  调用时必须在消息里附带至少一张参考图。如果只想做文生视频，请用 `kling-o3` / `sora-2` / `veo-3.1`。
+</Callout>
+
+## 价格速查
+
+<Callout type="info" title="更新时间">
+  数据更新于 **2026-05-15**，最新价格以模型广场为准。
+</Callout>
+
+| 模型 | 单价 (USD/次) | 说明 |
+| --- | ---: | --- |
+| `nano-banana` | 0.06 | 图像 |
+| `nano-banana-2` | 0.20 | 图像 |
+| `nano-banana-pro` | 0.30 | 图像 |
+| `gpt-image-2` | 0.10 | 图像 |
+| `sora-2` | 1.20 | 视频 8s |
+| `sora-2-pro` | 3.50 | 视频 8s |
+| `veo-3.1` | 4.00 | 视频 8s 1080p |
+| `veo-3.1-fast` | 1.80 | 视频 8s 1080p |
+| `veo-3.1-ref` | 4.80 | 视频 8s 1080p（带参考图） |
+| `kling-3.0` | 1.50 | 视频 10s |
+| `kling-o3` | 2.20 | 视频 15s |
+
+<Callout type="info" title="固定价计费">
+  ProAPI 的音视频模型采用 **固定价计费**：无论你传 `quality=low` 还是 `quality=ultra`，无论 `duration=4` 还是 `duration=12`，价格都是表中的固定单价。最终价格 = 单价 × 分组倍率（音视频分组为 `x1`）。
+</Callout>
+
+## 长连接与超时
+
+视频生成的实际耗时：
+
+| 模型 | 典型耗时（8 秒视频） |
+| --- | --- |
+| `sora-2` / `sora-2-pro` | 150 ~ 180 秒 |
+| `veo-3.1` 系列 | 160 ~ 200 秒 |
+| `kling-3.0` / `kling-o3` | 300 ~ 400 秒 |
+
+<Callout type="warn" title="Cloudflare 100s 限制">
+  ProAPI 公网域名 `https://newapi.prorisehub.com` 走 Cloudflare 代理，**所有请求的最长执行时间为 100 秒**，超过即返回 `504`。这是 Cloudflare 免费 / Pro 计划的硬限制，无法通过普通账号绕过。
+
+  **视频生成调用必须做以下处理**之一：
+
+  1. **客户端设置长 timeout**（≥ 400 秒），并将 ProAPI 域名加入代理直连白名单（避免被本地代理切断）。
+  2. **使用异步轮询模式**（如果客户端支持）：先 POST 创建任务，再轮询任务状态。Sora / Veo / Kling 上游均支持，但目前 ProAPI 默认走同步桥接。
+
+  如果你的请求稳定在 100 秒返回 `504`，几乎都是网关超时，不是 ProAPI 故障。
+</Callout>
+
+## 完整调用示例
+
+<Tabs items={['cURL（图像 size）', 'cURL（视频）', 'Python（图像）', 'Node.js（视频）']}>
+<Tab value="cURL（图像 size）">
+
+按 OpenAI 官方 Images API 协议发送，**只传协议内的 `size` 字段**，ProAPI 会自动映射到对应的比例：
+
+```bash
+# 9:16 竖图
+curl https://newapi.prorisehub.com/v1/images/generations \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "a cat under moonlight",
+    "n": 1,
+    "size": "1024x1792"
+  }'
+# 返回 model 字段: firefly-nano-banana-2k-9x16
+```
+
+只要客户端能传 OpenAI 协议中的 `size`，ProAPI 这一侧就能识别。如果你的客户端 UI 没有 `size` 选项（比如 Cherry Studio 的普通聊天模式），需要通过其他方式（自定义请求体 / 扩展字段 / 客户端的图片生成应用）传入。
+
+</Tab>
+<Tab value="cURL（视频）">
+
+```bash
+curl https://newapi.prorisehub.com/v1/chat/completions \
+  --max-time 300 \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "veo-3.1-fast",
+    "messages": [{"role":"user","content":"一只海豚在落日海面跃出水面"}],
+    "duration": 8,
+    "aspect_ratio": "16:9",
+    "quality": "high",
+    "stream": false
+  }'
+```
+
+</Tab>
+<Tab value="Python（图像）">
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-音视频分组令牌",
+    base_url="https://newapi.prorisehub.com/v1",
+    timeout=240,
+)
+
+resp = client.images.generate(
+    model="nano-banana-pro",
+    prompt="一只柴犬在富士山下奔跑，浮世绘风格",
+    n=1,
+    extra_body={
+        "quality": "high",
+        "aspect_ratio": "16:9",
+    },
+)
+print(resp.data[0].url)
+```
+
+<Callout type="info" title="扩展字段透传">
+  OpenAI Python SDK 不识别 `quality` / `aspect_ratio` 这类扩展字段，需要通过 `extra_body` 透传。
+</Callout>
+
+</Tab>
+<Tab value="Node.js（视频）">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-音视频分组令牌",
+  baseURL: "https://newapi.prorisehub.com/v1",
+  timeout: 5 * 60 * 1000, // 5 分钟
+});
+
+const resp = await client.chat.completions.create({
+  model: "sora-2-pro",
+  messages: [{ role: "user", content: "海浪拍打礁石的慢动作特写" }],
+  // @ts-ignore 扩展字段
+  duration: 12,
+  aspect_ratio: "9:16",
+  stream: false,
+});
+
+console.log(resp.choices[0].message.content);
+```
+
+</Tab>
+</Tabs>
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q1：我能不能直接传 firefly-nano-banana-4k-16x9 这种后端模型名？">
+
+**不能**。后端模型名不在 `/v1/models` 列表中，会返回 `model_not_found`。只能传 ProAPI 暴露的简洁名（如 `nano-banana`）+ 业务参数。
+
+</Accordion>
+<Accordion title="Q2：我传了 quality=auto，会走哪个分辨率？">
+
+`auto` 不在映射表中，会按默认值 `-2k` 处理。如果想强制一个分辨率，请明确传 `low` / `medium` / `high`。
+
+</Accordion>
+<Accordion title="Q3：返回的 model 字段不是我传的名字？">
+
+响应里的 `model` 字段是实际命中的后端模型 ID（如 `firefly-sora2-8s-16x9`），是预期行为。**计费仍按你请求里的 `model`（如 `sora-2`）执行**。
+
+</Accordion>
+<Accordion title="Q4：能批量出图吗？">
+
+图像 `n` 参数 **只支持 1**，需要批量请在客户端循环调用。
+
+</Accordion>
+<Accordion title="Q5：能上传图片做参考吗？">
+
+图像可走 `/v1/images/edits`（multipart 上传图片二进制）。视频中 `veo-3.1-ref` / `kling-3.0` 支持参考图，但需要把图片作为内容块嵌入到 `messages` 里，具体格式以模型广场示例为准。
+
+</Accordion>
+<Accordion title="Q6：测试 kling-3.0 一直报 reference_images required？">
+
+`kling-3.0` 必须传参考图，参见上方 Callout。文生视频请改用 `kling-o3`。
+
+</Accordion>
+<Accordion title="Q7：客户端怎么传 size？">
+
+取决于客户端 UI：
+
+- **Cherry Studio**「绘画」应用有 `图片尺寸` 选项；
+- **OpenAI 官方 SDK** 直接传 `size="1024x1792"`；
+- **自己写代码** 用 fetch / requests 时把 `size` 字段加进请求体即可。
+
+如果客户端 UI 没有 `size` 选项（如 Cherry 普通聊天模式），就只能走默认值；需要切比例就改用方式 B 通过扩展字段控制。
+
+</Accordion>
+<Accordion title="Q8：传了一个非 OpenAI 协议中的 size（比如 3840x2160）会怎样？">
+
+ProAPI 严格按 OpenAI 协议识别 `size`，**只翻译方式 A 表格里列出的 7 个官方值**，其他值不会触发映射，请求会走默认 `2k-16x9`。需要更高分辨率请用 `quality=high`（方式 B 扩展字段）。
+
+</Accordion>
+<Accordion title="Q9：size 字段和 aspect_ratio 字段同时传会怎样？">
+
+建议只传一个。同时传时，因为映射规则是按顺序执行的，**`size` 派生出的 `aspect_ratio` 会覆盖你显式传的 `aspect_ratio`**。OpenAI 协议场景只传 `size`，SDK 扩展场景只传 `aspect_ratio`。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/api/openai"
+    icon={<CpuIcon />}
+    title="OpenAI 兼容端点"
+    description="本章规则建立在 OpenAI Images / Chat 协议之上，先了解协议本身。"
+  />
+  <Card
+    href="/paint/gpt-image"
+    icon={<PaletteIcon />}
+    title="GPT-Image-2 绘图教程"
+    description="图像生成模型的完整参数与最佳实践。"
+  />
+  <Card
+    href="/token/media-unified"
+    icon={<BookOpenIcon />}
+    title="音视频分组介绍"
+    description="音视频模型分组的倍率、限速与模型清单。"
+  />
+</Cards>

@@ -1,0 +1,23 @@
+services:
+  pro-docs:
+    image: ghcr.io/prorise-cool/pro-docs:latest
+    container_name: pro-docs
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      # 仅监听本机，由 1Panel 反向代理对外
+      - "127.0.0.1:3210:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

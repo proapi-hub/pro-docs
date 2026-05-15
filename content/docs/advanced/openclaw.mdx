@@ -1,0 +1,182 @@
+---
+title: "OpenClaw"
+description: "Linux / macOS 端部署 OpenClaw，接入 ProAPI 并连接 Telegram Bot"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { MonitorIcon, LayoutDashboardIcon } from 'lucide-react';
+
+## 适用场景
+
+<Callout type="info" title="仅适用于 Linux / macOS">
+  OpenClaw 当前主要面向 **Linux 云服务器** 与 **macOS** 终端用户。Windows 用户请优先考虑 [Claude Desktop](/advanced/claude-desktop) 或 [AionUI](/advanced/aion-ui)。
+</Callout>
+
+本教程演示如何在服务器或 macOS 终端安装 OpenClaw，对接 ProAPI 渠道，并通过 Telegram Bot 进行对话。
+
+## 第一步：安装与初始化
+
+SSH 登录服务器或打开 macOS 终端，运行：
+
+```bash
+curl -fsSL https://openclaw.ai/install.sh | bash
+```
+
+耐心等待安装结束，出现初始化界面时按提示一步步选择：
+
+1. 首屏选择 `yes` 回车确认。
+
+   ![安装初始界面](/assets/image/Advanced/OpenClaw/01.webp)
+
+2. 选择 **QuickStart** 进入快速向导。
+
+   ![QuickStart](/assets/image/Advanced/OpenClaw/02.webp)
+
+3. 供应商选择 **Skip for now**，稍后通过配置脚本统一接入。
+
+   ![跳过供应商](/assets/image/Advanced/OpenClaw/03.webp)
+
+4. 适配器选择 **anthropic**。
+
+   ![选择 anthropic 适配器](/assets/image/Advanced/OpenClaw/04.webp)
+
+5. 模型选择 **opus-4.5**。
+
+   ![选择模型](/assets/image/Advanced/OpenClaw/05.webp)
+
+6. 社交软件适配器按需选择，本教程演示 **Telegram**。
+
+   ![Telegram 适配器](/assets/image/Advanced/OpenClaw/06.webp)
+
+7. 输入提前在 BotFather 创建好的 Bot Token，回车继续。
+
+8. Skill 安装步骤先跳过，后续可通过 Web 后台安装。
+
+   ![跳过 Skill](/assets/image/Advanced/OpenClaw/07.webp)
+
+9. Hook 选择时使用 <kbd>空格</kbd> 全选后回车，等待 Gateway 安装。
+
+   ![Hook 全选](/assets/image/Advanced/OpenClaw/08.webp)
+
+10. 打开方式步骤先跳过。
+
+    ![跳过打开方式](/assets/image/Advanced/OpenClaw/09.webp)
+
+11. Shell 补全脚本选择 `yes`，安装完成。
+
+    ![安装完成](/assets/image/Advanced/OpenClaw/10.webp)
+
+## 第二步：配置 ProAPI 渠道
+
+<Callout type="info" title="使用官方配置脚本">
+  ProAPI 提供了专用配置脚本 [openclaw-configurator](https://github.com/prome/openclaw-configurator) 以快速完成渠道与模型配置。
+</Callout>
+
+<Callout type="warn" title="Gemini 暂未支持">
+  目前脚本尚未支持 Gemini 渠道，正在开发中。如需 Gemini 请暂时使用 [AionUI](/advanced/aion-ui)。
+</Callout>
+
+1. 在终端运行配置器：
+
+   ```bash
+   curl -fsSL https://github.com/prome/openclaw-configurator/releases/latest/download/index.js -o /tmp/openclaw-config.js && node /tmp/openclaw-config.js
+   ```
+
+2. 选择 **添加供应商**，预设选 **ProCode**。
+
+   ![添加供应商](/assets/image/Advanced/OpenClaw/11.webp)
+
+3. 在模型列表中选择目标模型，例如 **Claude Opus 4.5**。
+
+   ![选择模型](/assets/image/Advanced/OpenClaw/12.webp)
+
+4. 粘贴 [创建 API 令牌](/) 一节中创建的对应分组令牌。
+
+   ![填写令牌](/assets/image/Advanced/OpenClaw/13.webp)
+
+5. 选择 **选择模型**，勾选刚才配置的模型回车确认。
+
+   ![选择已配置模型](/assets/image/Advanced/OpenClaw/14.webp)
+
+6. 选择 **退出**，回到终端。
+
+7. 重启 Gateway 让配置生效：
+
+   ```bash
+   openclaw gateway restart
+   ```
+
+   ![重启 Gateway](/assets/image/Advanced/OpenClaw/15.webp)
+
+8. 启动 TUI 验证模型可用：
+
+   ```bash
+   openclaw tui
+   ```
+
+   测试输出正常后输入 `/quit` 退出。
+
+   ![TUI 测试](/assets/image/Advanced/OpenClaw/16.webp)
+
+## 第三步：开启浏览器后台访问
+
+<Callout type="warn" title="生产环境务必启用 HTTPS">
+  在公网服务器运行时，请使用 nginx 等反向代理并配置 SSL 证书，避免后台令牌被中间人窃取。
+</Callout>
+
+如需在开发环境跳过 HTTPS 校验，修改 `~/.openclaw/openclaw.json`，在 `gateway` 字段下追加：
+
+```json
+"controlUi": {
+  "allowInsecureAuth": true
+}
+```
+
+修改后重启 Gateway：
+
+```bash
+openclaw gateway restart
+```
+
+终端会输出带 Token 的 **Dashboard URL**：
+
+![获取 Dashboard URL](/assets/image/Advanced/OpenClaw/17.webp)
+
+浏览器访问该 URL 即可进入后台：
+
+![后台界面](/assets/image/Advanced/OpenClaw/18.webp)
+
+## 第四步：授权 Telegram Bot
+
+1. 回到 BotFather 中点击你创建的 Bot 链接，进入对话窗口发送任意消息，会得到一段 **Pairing code**。
+
+   ![获取 Pairing code](/assets/image/Advanced/OpenClaw/19.webp)
+
+2. 在服务器终端执行授权命令（将 `<Pairing code>` 替换为实际值）：
+
+   ```bash
+   openclaw pairing approve telegram <Pairing code>
+   ```
+
+   ![授权完成](/assets/image/Advanced/OpenClaw/20.webp)
+
+授权完成后即可在 Telegram 中与 Bot 直接对话。
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/advanced/claude-desktop"
+    icon={<MonitorIcon />}
+    title="Claude Desktop"
+    description="Anthropic 官方桌面客户端接入 ProAPI。"
+  />
+  <Card
+    href="/advanced/aion-ui"
+    icon={<LayoutDashboardIcon />}
+    title="AionUI"
+    description="多模型可视化 GUI，统一管理 Claude / Gemini / Codex。"
+  />
+</Cards>

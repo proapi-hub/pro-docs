@@ -1,0 +1,93 @@
+---
+title: "令牌与分组"
+description: "ProAPI 令牌分组的概念、计费倍率，以及如何查看最新分组"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 什么是令牌分组
+
+在 ProAPI，**分组（Group）** 决定了你的令牌能调用哪些上游渠道、享受什么计费倍率。
+
+创建令牌时选择不同的分组，本质上是在选择**不同来源的模型号池**：有的来自官方订阅账号，有的来自逆向渠道，有的是聚合号池。它们在**稳定性、价格、适用场景**上各有取舍。
+
+<Callout type="info" title="一句话理解">
+分组 = 模型来源 + 计费倍率。选对分组，既省钱又稳定；选错分组，要么贵，要么报“模型不存在”。
+</Callout>
+
+***
+
+## 计费倍率怎么算
+
+每个分组名后面会显示一个类似 `x0.3` 的数字，这就是该分组的**计费倍率**：
+
+所有的模型倍率严格对齐官方定价，越贵的模型即使越便宜的分组也同样会消耗较高余额
+- 倍率 **< 1** 享折扣：`0.3` 倍 = 三折，`0.08` 倍 = 0.8 折
+- 倍率 **= 1** 原价：按模型标准价计费
+- 倍率 **> 1** 需加价：`1.5` 倍 = 额外支付 50% 费用
+- 不选择分组则使用你的默认计费倍率（`1x`）
+
+> 同一个模型在不同分组下的价格可能相差几十倍，**选分组前务必看清倍率**。
+
+***
+
+## 如何查看最新分组
+
+分组与模型会随号池调整而变化，**控制台里的“模型广场”永远是最新的**。
+
+1. 在控制台面板，点击右上角 **“模型广场”**，进入分组与模型的查看页面。
+
+2. 进入模型广场后，左侧红框处就是[创建 API 令牌](/)步骤中提到的令牌分组，右侧就是该分组下所存在的模型。
+
+3. 左侧分组名后显示的类似 `x0.5` 就是该分组的计费倍率。
+
+![image-20260514223706302](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514223706302.png)
+
+
+
+![image-20260514223837154](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514223837154.png)
+
+<Callout type="warn" title="为什么一定要学会这一步">
+很多人只看分组名，却不知道分组下到底有哪些模型，稀里糊涂配置后使用就提示“模型不存在”。
+**各分组详情页列出的模型为编写时快照，最终请以模型广场的实时列表为准。**
+</Callout>
+
+如下图动态图所示，可以在模型广场筛选出该分组下可调用的所有模型：
+
+![TL160ADMP26](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/TL160ADMP26.gif)
+
+
+
+***
+
+## 分组总览
+
+| 分组 | 计费倍率 | 主要用途 | 第三方接入 |
+| --- | --- | --- | --- |
+| `Codex-Pro` | **x0.3** | Codex 官方纯血 Pro 中转 | ✅ 支持 |
+| `Codex-Plus` | **x0.08** | Codex 官方 Team / Plus 中转 | ✅ 支持 |
+| `Ant-Claude` | **x0.4** | 反重力官方 Claude 中转 | ✅ 支持 |
+| `Kiro-Claude-高缓存` | **x0.3** | Kiro 高缓存渠道中转 | ✅ 支持 |
+| `Claude-Windsurf` | **x0.25** | Windsurf 逆向 Claude 分组 | ✅ 支持 |
+| `Ant-Gemini` | **x0.1** | 反重力官方 Gemini 中转 | ✅ 支持 |
+| `Grok` | **x0.005** | Grok 官方渠道中转 | ✅ 支持 |
+| `音视频模型` | **x1** | 音视频模型渠道聚合分组 | ✅ 支持 |
+| `统一分组` | **x1** | 站内全模型聚合分组 | ✅ 支持 |
+
+<Callout type="info">
+所有分组**均允许接入第三方工具**（Cline、OpenCode、各类逆向客户端等），可放心使用。
+</Callout>
+
+***
+
+## 分组详情
+
+按模型家族查看各分组的来源、倍率、适用场景与模型列表：
+
+<Cards>
+  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / Claude-Windsurf" />
+  <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus" />
+  <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok" />
+  <Card title="音视频与统一分组" href="/token/media-unified" description="音视频模型 / 统一分组" />
+</Cards>

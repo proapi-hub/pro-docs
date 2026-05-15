@@ -1,0 +1,55 @@
+---
+title: "Claude Code 配置"
+description: "在 CC-Switch 中配置 Claude Code"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn" title="使用提醒">
+ProAPI 的 Claude 系列分组（`Ant-Claude` / `Kiro-Claude-高缓存` / `Claude-Windsurf`）均支持第三方接入，可在 CC Switch 中正常配置与测试。各分组的来源与计费倍率详见 [Claude 系列分组](/token/claude)。
+</Callout>
+
+开始前，请确认已完成 [通用步骤](/ccswitch/common) 中的软件下载与环境检查。配置是否生效，请直接以 Claude Code 内的实际对话结果为准。
+
+1. 打开你下载的 CC-Switch 软件，你会看到如下图的初始界面。
+
+![image-20260514150909827](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514150909827.png)
+
+2. 在分组条中，将分组选择至「Claude」。
+
+![image-20260514151016730](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151016730.png)
+
+3. 在供应商分组中，选择如图的「自定义配置」。
+
+![image-20260514151042037](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151042037.png)
+
+4. 回顾 [创建 API 令牌](/#第四步创建-api-令牌)，在 ProAPI 中创建 **CC** 分组的令牌，点击复制按钮，将 API Key 复制到剪切板。
+
+![image-20260514151412387](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151412387.png)
+
+5. 下拉模态框，找到「CC 切换」配置项，选择你要调用的【 Claude 】系列模型
+
+![image-20260514151602144](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151602144.png)
+
+
+
+6. 添加成功后，主界面会显示我们配置的分组。在右侧点击「启用」按钮，显示「使用中」即配置完成。
+
+![image-20260514151614492](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151614492.png)
+
+![image-20260514151631408](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151631408.png)
+
+7. 点击左上角「设置」按钮，在通用页面下拉找到 `跳过 Claude Code 初次安装确认`，**务必勾选**。
+
+![image-20260514151736296](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151736296.png)
+
+8. 在终端运行 `claude`，看到对话界面并能正常回复，即表示配置完成。
+
+![image-20260514151903781](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151903781.png)
+
+![image-20260514152025476](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514152025476.png)
+
+
+---
+
+下一步：[Codex 配置](/ccswitch/codex)

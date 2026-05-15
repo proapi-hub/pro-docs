@@ -1,0 +1,75 @@
+---
+title: "通用步骤"
+description: "CC-Switch 各客户端共用的软件下载与环境检查流程"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card } from 'fumadocs-ui/components/card';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { CheckCircleIcon } from 'lucide-react';
+
+在配置任意 CLI 客户端之前，请先完成本页的软件下载与环境检查。
+
+## 软件下载
+
+<Tabs items={["Windows","MacOS","Linux"]}>
+<Tab value="Windows">
+
+1. 打开 [CC-Switch 的 GitHub Release 页面](https://github.com/farion1231/cc-switch/releases/latest)。
+2. 滚动到最下方，选择适合自己系统的安装包。Windows 推荐下载普通 `.msi` 后缀的安装包进行安装。
+
+![](/assets/image/CC-Switch/001.webp)
+
+3. 安装后运行 CC-Switch 主程序，界面如下。
+
+![](/assets/image/CC-Switch/002.webp)
+
+</Tab>
+<Tab value="MacOS">
+
+macOS 推荐使用 HomeBrew 安装。打开终端后，依次运行以下命令：
+
+```bash
+# 添加 tap 源
+brew tap farion1231/ccswitch
+
+# 安装 CC-Switch
+brew install --cask cc-switch
+```
+
+安装完成后，在「启动台」或「应用程序」文件夹中找到 CC-Switch 并启动。
+
+![](/assets/image/CC-Switch/002.webp)
+
+</Tab>
+<Tab value="Linux">
+
+Debian / Ubuntu 系统：
+
+```bash
+# 下载 .deb 包
+wget https://github.com/farion1231/cc-switch/releases/latest/download/cc-switch_x.x.x_amd64.deb
+
+# 安装
+sudo dpkg -i cc-switch_x.x.x_amd64.deb
+```
+
+</Tab>
+</Tabs>
+
+## 环境检查
+
+<Callout type="warn" title="注意">
+  **请你最好完成环境检查步骤！** 如果你有经验，能确认本机的 Node.js 环境以及 Claude Code、Codex、Gemini CLI 都已正确安装、配置目录也都存在，可以跳过这一步，直接进入对应客户端的配置。
+</Callout>
+
+环境检查的完整步骤已整理为独立页面，请前往阅读并按教程执行：
+
+<Card
+  href="/cli/env-check"
+  icon={<CheckCircleIcon />}
+  title="环境检查"
+  description="手动 CLI 配置前的环境检查 —— 确认 Node.js 与各 CLI 安装状态。"
+/>
+
+完成环境检查后，即可前往 [Claude Code 配置](/ccswitch/claude-code)、[Codex 配置](/ccswitch/codex) 或 [Gemini 配置](/ccswitch/gemini)。

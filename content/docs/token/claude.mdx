@@ -1,0 +1,115 @@
+---
+title: "Claude 系列分组"
+description: "Ant-Claude、Kiro-Claude-高缓存、Claude-Windsurf 三个 Claude 分组的来源、倍率与适用场景"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Claude 系列分组
+
+三个 Claude 分组来源不同、价格不同，按需选择。同为 Claude 模型，可直接用于 Claude Code，也可接入第三方工具。
+
+<Callout type="info" title="怎么选">
+- 追求**稳定**：选（...）暂时还没有，后续会上架官转纯血模型
+- 追求**性价比**：选 `Kiro-Claude-高缓存` 或 `Claude-Windsurf`
+- 各分组模型列表为编写时快照，最终以 **模型广场** 实时列表为准。
+</Callout>
+
+<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'Claude-Windsurf']}>
+<Tab value="Ant-Claude">
+
+- **分组介绍：**
+
+  - 反重力官方 Claude 中转，逆向 Google Antigravity 得到的 Claude 模型渠道。提供 Opus / Sonnet / Haiku 全系列，是 Claude 分组中**综合稳定性最好**的一档，适合作为日常主力，但谷歌风控策略逐步严格，很大部分情况下请求偏慢，质量中等，约官方满血版的 80% 智力，在早上的时间点可能会出现空号的情况，不推荐
+
+- **计费倍率：** `x0.4`
+
+- **适用 CLI / 工具：**
+
+  - Claude Code（推荐）
+  - Cline 等第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `claude-opus-4-7`
+  - `claude-opus-4-6`
+  - `claude-sonnet-4-6`
+  - `claude-haiku-4-5-20251001`
+
+</Tab>
+<Tab value="Kiro-Claude-高缓存">
+
+- **分组介绍：**
+
+  - 逆向 Kiro（AWS Q）得到的 Claude 模型渠道，**开启了高缓存策略**，价格相较 Ant-Claude 更低。上下文 200K ~ 1M，支持思考，适合日常使用、任务规划、翻译等场景。
+
+- **计费倍率：** `x0.3`
+
+- **适用 CLI / 工具：**
+
+  - Claude Code
+  - Cline 等第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `claude-opus-4-7`
+  - `claude-opus-4-6`
+  - `claude-opus-4-5-20251101`
+  - `claude-sonnet-4-6`
+  - `claude-sonnet-4-5-20250929`
+  - `claude-haiku-4-5-20251001`
+
+<Callout type="warn" title="稳定性提示">
+此分组在 Claude Code 中使用时偶发 **422 错误**，稳定性略逊于 Ant-Claude。追求稳定优先选 Ant-Claude，追求性价比可选本分组。
+</Callout>
+
+</Tab>
+<Tab value="Claude-Windsurf">
+
+- **分组介绍：**
+  - 逆向 Windsurf 得到的 Claude 分组，是 Claude 系列中 **倍率最低** 的一档，但由于 windsurf 的技术限制，windsurf 模型在长期工作中不如其他渠道，不适合作为编程 agent 模型，适合接入自己的服务作为任务模型
+  
+- **计费倍率：** `x0.25`
+
+- **适用 CLI / 工具：**
+
+  - Claude Code
+  - Cline 等第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+  - `claude-opus-4-7-max`
+  - `claude-opus-4-7-xhigh`
+  - `claude-opus-4-7-high`
+  - `claude-opus-4-7-medium`
+  - `claude-opus-4-7-low`
+  - `claude-opus-4.6`
+  - `claude-opus-4.6-thinking`
+  - `claude-4.5-opus`
+  - `claude-4.5-opus-thinking`
+  - `claude-sonnet-4.6`
+  - `claude-sonnet-4.6-thinking`
+  - `claude-sonnet-4.6-1m`
+  - `claude-sonnet-4.6-thinking-1m`
+  - `claude-4.5-haiku`
+
+<Callout type="warn" title="可用性提示">
+此分组渠道会视上游情况临时上下架，**可能出现暂时不可用**。如调用失败，请改用 Ant-Claude 或 Kiro-Claude-高缓存，并以模型广场的实时状态为准。
+</Callout>
+
+</Tab>
+</Tabs>
+
+***

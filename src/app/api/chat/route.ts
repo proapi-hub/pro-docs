@@ -1,7 +1,8 @@
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenAI } from '@ai-sdk/openai';
 import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from 'ai';
 import { z } from 'zod';
 import { source } from '@/lib/source';
+import { getAllowedModels, isAllowedModel } from '@/lib/models';
 import { Document, type DocumentData } from 'flexsearch';
 
 interface CustomDocument extends DocumentData {
@@ -16,6 +17,7 @@ export type ChatUIMessage = UIMessage<
   {
     client: {
       location: string;
+      pageTitle?: string;
     };
   }
 >;
@@ -34,7 +36,6 @@ async function createSearchServer() {
   const docs = await chunkedAll(
     source.getPages().map(async (page) => {
       if (!('getText' in page.data)) return null;
-
       return {
         title: page.data.title,
         description: page.data.description,
@@ -43,11 +44,7 @@ async function createSearchServer() {
       } as CustomDocument;
     }),
   );
-
-  for (const doc of docs) {
-    if (doc) search.add(doc);
-  }
-
+  for (const doc of docs) if (doc) search.add(doc);
   return search;
 }
 
@@ -60,27 +57,40 @@ async function chunkedAll<O>(promises: Promise<O>[]): Promise<O[]> {
   return out;
 }
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
+// 兼容 OpenAI 协议的私有网关；API Key 留在服务端
+const llm = createOpenAI({
+  baseURL: process.env.PROAPI_BASE_URL,
+  apiKey: process.env.PROAPI_API_KEY,
 });
 
-/** System prompt, you can update it to provide more specific information */
 const systemPrompt = [
-  'You are an AI assistant for a documentation site.',
-  'Use the `search` tool to retrieve relevant docs context before answering when needed.',
-  'The `search` tool returns raw JSON results from documentation. Use those results to ground your answer and cite sources as markdown links using the document `url` field when available.',
-  'If you cannot find the answer in search results, say you do not know and suggest a better search query.',
+  '你是 ProAPI 文档站的智能问答助手。',
+  '工作流程：',
+  '1. 用户消息中可能包含 `[Client Context: {"location":"/path","pageTitle":"..."}]` —— 这是用户当前所在的文档页面，仅供参考。',
+  '2. 当用户用 "这个页面 / 当前页 / 这篇" 等指代时，把 `pageTitle` 当作主要检索关键词调用 `search`。',
+  '3. 调用 `search` 时只传中文/英文关键词，**绝对不要**传整段 URL 或自然语言长句。',
+  '4. 第一次结果不理想时，更换关键词重试（最多 3 次）。',
+  '5. 基于 `search` 返回的片段作答，并用 markdown 链接 `[标题](url)` 注明来源。',
+  '6. 若仍检索不到，告诉用户检索为空并建议替代关键词。',
+  '默认使用简体中文回答，语气专业且简洁。',
 ].join('\n');
 
-export async function POST(req: Request, ctx: RouteContext<"/api/chat">) {
-  const reqJson = await req.json();
+export async function POST(req: Request) {
+  const reqJson = (await req.json()) as {
+    messages?: ChatUIMessage[];
+    model?: string;
+  };
+
+  // 白名单校验，防止前端用任意 model 绕过
+  const allowed = await getAllowedModels();
+  const fallback = process.env.PROAPI_DEFAULT_MODEL ?? allowed[0];
+  const modelId =
+    reqJson.model && isAllowedModel(reqJson.model, allowed) ? reqJson.model : fallback;
 
   const result = streamText({
-    model: openrouter.chat(process.env.OPENROUTER_MODEL ?? 'anthropic/claude-3.5-sonnet'),
+    model: llm.chat(modelId),
     stopWhen: stepCountIs(5),
-    tools: {
-      search: searchTool,
-    },
+    tools: { search: searchTool },
     messages: [
       { role: 'system', content: systemPrompt },
       ...(await convertToModelMessages<ChatUIMessage>(reqJson.messages ?? [], {

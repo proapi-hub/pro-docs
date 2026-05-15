@@ -1,0 +1,427 @@
+---
+title: "Codex 相关问题"
+description: "OpenAI Codex CLI 常见问题、排错与高效用法"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { BotIcon, HelpCircleIcon, MonitorIcon } from 'lucide-react';
+
+## 章节导读
+
+本页覆盖 Codex CLI 的日常排错与高效用法。**基础配置请先阅读** [Codex 配置](/cli/codex) 或 [CC-Switch 接入](/ccswitch/codex)。
+
+## 高效使用 Codex
+
+很多人在使用一段时间后认为模型「降智」。从实际使用来看，Codex 模型升级后并未变弱，关键在于 **如何合理使用模型**。
+
+### 三条核心原则
+
+1. **任务划分** — 任何时候都不要提交过于笼统的任务（如「请帮我写一个管理系统后台」）。Codex 的特点是 **严谨有序、指哪打哪**，意味着必须先把任务拆解到模块化粒度。
+
+2. **掌控之内** — 提交任务前先评估它是否拆得够细，是否符合模块化开发。理想状态是：你能预估 Codex 这次会改哪些文件、产生哪些变动。一旦 AI 脱离掌控，结局多半是项目越改越乱直到重置。
+
+3. **避免压缩** — 多数任务只用到 Codex 约 60% 的上下文就能解决。如果到 60% 还没解决甚至需要压缩，那次的任务拆分就算失败，应当回到第 1 步进一步拆细。**优秀的 Codex 选手几乎不用 `/compact`**。
+
+<Callout type="info" title="碎碎念">
+  AI 时代让很多东西变简单，但基础知识决定了 AI 的使用上限。当前阶段的 AI 只是一个非常优秀的 Copilot 角色，同一个模型在不同人手里会有截然不同的发挥。
+</Callout>
+
+## 配置指南
+
+### Windows 下丝滑使用 Codex
+
+<Callout type="warn" title="一并解决多个痛点">
+  本方法同时解决 **读写文件、乱码、Token 消耗高、项目无记忆** 等多个问题。
+</Callout>
+
+1. 确保 Codex CLI 与 VSCode Codex 插件已正常工作。
+
+2. 按 <kbd>Win</kbd> + <kbd>R</kbd> 打开用户目录：
+
+   ```bash
+   %userprofile%\.codex
+   ```
+
+3. 编辑 `config.toml`：
+
+   ```toml
+   model_provider = "procode"
+   model = "gpt-5.4"
+   model_reasoning_effort = "high"
+   network_access = "enabled"
+   disable_response_storage = true
+   windows_wsl_setup_acknowledged = true
+   model_verbosity = "high"
+
+   [model_providers.procode]
+   name = "procode"
+   base_url = "https://newapi.prorisehub.com/v1"
+   wire_api = "responses"
+   requires_openai_auth = true
+   ```
+
+4. 编辑（或新建）`AGENTS.md`，写入全局工作指南：
+
+   ```markdown
+   # Codex 全局工作指南
+
+   ## 回答风格
+    - 回答必须使用中文
+    - 对总结、Plan、Task 以及长内容输出，优先逻辑整理后用表格美观输出；普通内容正常输出
+   ```
+
+5. 启动 VSCode Codex 插件，体验新效果。
+
+### Codex 在 Windows 系统下乱码
+
+1. 按 <kbd>Win</kbd> + <kbd>R</kbd>，输入以下命令打开「区域」设置：
+
+   ```bash
+   intl.cpl
+   ```
+
+2. 切到「管理」选项卡，点击 **更改系统区域设置**。
+
+3. 勾选「Beta 版：使用 Unicode UTF-8 提供全球语言支持」，确定后重启电脑。
+
+### VSCode Codex 插件中加载最新模型
+
+VSCode Codex 插件内置了一份模型列表，若该列表落后于 ProAPI 提供的模型，可以通过替换插件 webview 的方式加载最新模型。
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+1. 打开 VSCode 插件目录：
+
+   ```bash
+   %userprofile%\.vscode\extensions
+   ```
+
+2. 进入 `openai.chatgpt-<最新版本号>` 目录。
+
+</Tab>
+<Tab value="macOS">
+
+1. 在访达按 <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>，输入：
+
+   ```bash
+   ~/.vscode/extensions
+   ```
+
+2. 进入 `openai.chatgpt-<最新版本号>` 目录。
+
+</Tab>
+</Tabs>
+
+3. 依次进入 `webview/assets`，将下载的 **替换脚本** 复制进去。
+4. 重启 VSCode，即可在选择器中看到最新模型。
+
+### 配置全局提示词
+
+1. 参照 [Codex 配置](/cli/codex) 前两步打开 `~/.codex` 目录。
+2. 编辑 `AGENTS.md`（如不存在请手动创建），写入提示词。
+3. 重启 Codex 或 VSCode 后生效。
+
+### 启用内置网络搜索
+
+1. 打开 `~/.codex/config.toml`。
+2. 加入：
+
+   ```toml
+   [features]
+   web_search_request = true
+   ```
+
+3. 重新运行 `codex` 即可使用网络搜索。
+
+## 常用命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `/model` | 选择当前使用的模型 |
+| `/approvals` | 设置本会话的审批规则 |
+| `/review` | 让 Codex 审查当前工作区变更 |
+| `/resume` | 从历史会话列表中选择并继续 |
+| `/new` | 在当前 CLI 会话中开启新对话 |
+| `/init` | 在当前目录生成 `AGENTS.md` 模板 |
+| `/compact` | 总结对话内容以释放上下文 |
+| `/undo` | 撤销 Codex 的上一次操作 |
+| `/diff` | 查看当前 git diff（含未跟踪文件） |
+| `/mention` | 将指定文件或目录加入对话上下文 |
+| `/status` | 查看会话配置和 token 使用情况 |
+| `/mcp` | 列出当前可用的 MCP 工具 |
+| `/exit` | 退出 Codex CLI |
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Codex 在容器 / CLI 沙盒中无法联网（如无法拉安装包）？">
+
+通常是 MTU 设置不当。终端正常但 Codex 沙盒不通时：
+
+- 将代理（Clash 等）MTU 改为 `1500`。
+- Linux 上找不到 Clash MTU 设置的用户参考：[https://linux.do/t/topic/1220328](https://linux.do/t/topic/1220328)
+
+</Accordion>
+
+<Accordion title="Connection failed: error sending request for url ...">
+
+本机网络问题，按顺序排查：
+
+1. 本机能否访问其他网页？
+2. 是否使用了网络代理（梯子）？如有请关闭。
+3. 在终端直接运行 `codex` 测试，判断是不是 VSCode 插件问题，是的话重启 VSCode。
+4. 若仍不行，带报错截图到群内咨询。
+
+</Accordion>
+
+<Accordion title="exceeded retry limit, last status: 401 Unauthorized">
+
+通常是环境变量残留覆盖了配置文件。先检查环境变量：
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+```bash
+cmd /c "echo ================= OPENAI ENV CHECK ================= & ^
+if defined OPENAI_API_KEY (echo OPENAI_API_KEY  = OK) else (echo OPENAI_API_KEY  = MISSING) & ^
+if defined OPENAI_BASE_URL (echo OPENAI_BASE_URL = OK) else (echo OPENAI_BASE_URL = MISSING) & ^
+echo ========================================================="
+```
+
+若输出非 `MISSING`，运行：
+
+```bash
+cmd /c "setx OPENAI_API_KEY \"\" & setx OPENAI_BASE_URL \"\""
+```
+
+</Tab>
+<Tab value="macOS">
+
+```bash
+echo "================= OPENAI ENV CHECK ================="
+[ -z "$OPENAI_API_KEY" ] && echo "OPENAI_API_KEY  = MISSING" || echo "OPENAI_API_KEY  = OK"
+[ -z "$OPENAI_BASE_URL" ] && echo "OPENAI_BASE_URL = MISSING" || echo "OPENAI_BASE_URL = OK"
+echo "========================================================"
+```
+
+若输出非 `MISSING`，运行：
+
+```bash
+unset OPENAI_API_KEY OPENAI_BASE_URL
+```
+
+</Tab>
+</Tabs>
+
+之后检查 `~/.codex/auth.json` 的 API Key 与 `config.toml` 的 `base_url` 是否正确，重启终端再试。
+
+</Accordion>
+
+<Accordion title="unexpected status 403 Forbidden: usage_not_included">
+
+号池中的某个账号出现问题：
+
+1. 用 <kbd>Ctrl</kbd> + <kbd>C</kbd> 中断（VSCode 中点停止）。
+2. 重新发起对话，观察是否复现。
+3. 重试 3 次以上无效，请带截图到群内反馈。
+
+</Accordion>
+
+<Accordion title="model_reasoning_effort 五档（minimal / low / medium / high / xhigh）怎么选？">
+
+| 取值 | 适用场景 |
+| --- | --- |
+| `minimal` / `low` | 补全、改注释、跑脚本 |
+| `medium`（默认） | 常规改 bug、小型重构 |
+| `high` | 架构设计、复杂排错 |
+| `xhigh` | 仅 `gpt-5.1-codex-max` / `gpt-5.2` 支持，其他模型会报 `unknown variant xhigh` |
+
+在 `~/.codex/config.toml` 设 `model_reasoning_effort = "high"`，会话内可用 `/model` 临时切换。
+
+</Accordion>
+
+<Accordion title="wire_api 选 chat 还是 responses？为何第三方中转必须 responses？">
+
+官方已弃用 `chat`，所有 GPT-5.x Codex 模型仅在 Responses API 端点可用。中转若仍走 `chat completions` 会触发：
+
+```
+Support for the "chat" wire API is deprecated
+```
+
+在 `[model_providers.xxx]` 下必须配置：
+
+```toml
+wire_api = "responses"
+```
+
+并配合 `disable_response_storage = true`（中转无法存储响应体）。
+
+</Accordion>
+
+<Accordion title="approval_policy / sandbox_mode 取值含义？">
+
+**`sandbox_mode`**：
+
+| 取值 | 含义 |
+| --- | --- |
+| `read-only` | 只读，不允许任何写入 |
+| `workspace-write`（推荐） | 仅可写当前工作区 |
+| `danger-full-access` | 全盘可写（高风险） |
+
+**`approval_policy`**：
+
+| 取值 | 含义 |
+| --- | --- |
+| `untrusted` | 每条命令都问 |
+| `on-failure`（推荐） | 失败时再问 |
+| `never` | 不问 |
+
+<Callout type="warn" title="已知 bug">
+  `workspace-write` 下 `approval_policy` 有时会被静默改成 `on-request`。建议改用 `[profiles.xxx]` 配置档配合 `codex --profile dev` 强制启用。
+</Callout>
+
+</Accordion>
+
+<Accordion title="AGENTS.md 加载顺序？为什么全局规则没生效？">
+
+加载顺序：
+
+1. `~/.codex/AGENTS.md`（全局）
+2. 仓库根 `AGENTS.md`
+3. 当前 cwd 的 `AGENTS.md`
+
+三者合并。**已知 bug**：CLI 有时不读全局文件，且只读仓库根那一份、不会向上递归。临时方案：在项目根 `AGENTS.md` 用 `@~/.codex/AGENTS.md` 显式引用。
+
+</Accordion>
+
+<Accordion title="MCP server 在 config.toml 里怎么配？">
+
+CLI 与 VSCode 插件共用 `~/.codex/config.toml`：
+
+```toml
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+env = { "API_KEY" = "xxx" }
+startup_timeout_sec = 15
+```
+
+<Callout type="warn" title="语法严格">
+  - 仅支持 STDIO transport。
+  - TOML 一旦语法错（表名重复、env 用了 JSON 风格），CLI 与插件都会静默不加载 MCP。
+</Callout>
+
+</Accordion>
+
+<Accordion title="登录了 ChatGPT 订阅，但 Codex 一直走 API Key 计费？">
+
+环境变量 `OPENAI_API_KEY` 优先级高于 `auth.json` 中的 ChatGPT OAuth，会静默覆盖。修复：
+
+1. `unset OPENAI_API_KEY`（Windows `set OPENAI_API_KEY=`）。
+2. 删除 `~/.codex/auth.json` 中的 `OPENAI_API_KEY` 字段。
+3. 在 `config.toml` 显式：
+
+   ```toml
+   preferred_auth_method = "chatgpt"
+   ```
+
+4. 重新 `codex login`。
+
+</Accordion>
+
+<Accordion title="model_verbosity 与 token 消耗的关系？">
+
+`model_verbosity = "low" | "medium" | "high"` 控制 GPT-5 Responses API 输出冗余度，**仅 GPT-5 系列生效**。
+
+GPT-5.5 上 token 暴涨多见，降到：
+
+```toml
+model_verbosity = "low"
+model_reasoning_effort = "medium"
+```
+
+可显著减少消耗。
+
+</Accordion>
+
+<Accordion title="disable_response_storage = true 到底起什么作用？">
+
+默认 OpenAI Responses API 会在服务端保存对话，以支撑 ZDR / 思维链复用。**中转厂商无此存储能力**，开启后 Codex 不再依赖 `previous_response_id`，改为每轮发送完整上下文。
+
+**不加这条**，中转必报 `response not found`。
+
+</Accordion>
+
+<Accordion title="Codex CLI 怎么升级？">
+
+暂无内置 `codex --upgrade`（issue 仍 open），统一用 npm：
+
+```bash
+# npm 全局
+npm i -g @openai/codex@latest
+
+# 指定 alpha 版本
+npm view @openai/codex versions
+npm i -g @openai/codex@0.x.x-alpha.x
+
+# Homebrew 安装的用户
+brew upgrade codex
+```
+
+</Accordion>
+
+<Accordion title="[profiles.xxx] 配置档怎么用？">
+
+同一台机器在「快速改 bug」与「深度架构设计」之间切换：
+
+```toml
+experimental_use_profile = true
+
+[profiles.quick]
+model_reasoning_effort = "low"
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+[profiles.dev]
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+approval_policy = "on-failure"
+```
+
+启动时指定：
+
+```bash
+codex --profile dev
+```
+
+可绕过 `workspace-write` 下 `approval_policy` 被覆盖的 bug。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/faq/claude-code"
+    icon={<BotIcon />}
+    title="Claude Code 相关问题"
+    description="Claude Code CLI 排错与高效用法。"
+  />
+  <Card
+    href="/faq/gemini"
+    icon={<HelpCircleIcon />}
+    title="Gemini 相关问题"
+    description="Gemini CLI 与 Cline / Roo Code 接入排错。"
+  />
+  <Card
+    href="/cli/codex"
+    icon={<MonitorIcon />}
+    title="Codex 配置"
+    description="基础配置流程与 config.toml 模板。"
+  />
+</Cards>

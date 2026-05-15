@@ -1,0 +1,10 @@
+{
+  "title": "CLI 配置",
+  "pages": [
+    "index",
+    "env-check",
+    "claude-code",
+    "codex",
+    "gemini"
+  ]
+}

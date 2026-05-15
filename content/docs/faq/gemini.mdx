@@ -1,0 +1,276 @@
+---
+title: "Gemini 相关问题"
+description: "Gemini CLI 与 Cline / Roo Code 接入 Gemini-3 的常见问题与排错"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { BotIcon, TerminalIcon, MonitorIcon } from 'lucide-react';
+
+## 章节导读
+
+Gemini CLI 当前在第三方中转场景下存在一些已知兼容性问题。如果你需要稳定使用 Gemini-3，**优先推荐 Cline / Roo Code 等 VSCode 插件**；如必须使用 Gemini CLI，请选用 `Ant-Gemini` 分组渠道。
+
+## Gemini CLI 使用现状与建议
+
+<Callout type="warn" title="现状说明">
+  Gemini CLI 目前存在多种使用问题，例如可能无法正常调用模型、无法粘贴图片。**通常不建议将 Gemini-3 接入 Gemini CLI**。
+</Callout>
+
+**更推荐的方式**：
+
+- 优先使用 **Roo Code** 等第三方 VSCode 插件
+- 如必须使用 Gemini CLI，建议使用 **Ant-Gemini 分组渠道**（兼容性更好）
+
+<Callout type="info" title="模型名差异">
+  Ant-Gemini 分组的 Gemini-3 模型名称可能与官方 API 形式不同，配置前请先到 **模型广场** 确认本分组下的准确模型名。详情查看 [Gemini 与 Grok 分组](/token/gemini-grok)，避免出现「无可用渠道」或「模型不存在」。
+</Callout>
+
+**额外提醒**：
+
+- 在 Roo Code 等第三方使用时，请选择 **OpenAI Response** 请求格式。
+- Ant-Gemini 分组的模型 **不自带联网**，需要时请通过 MCP 等工具实现。
+
+## 在 Cline 中使用 Gemini-3
+
+### 软件要求
+
+| 软件 | 版本要求 | 下载链接 |
+| --- | --- | --- |
+| VSCode | 1.80.0+ | [下载 VSCode](https://code.visualstudio.com/) |
+
+### 配置流程
+
+**第一步：创建 Gemini 分组令牌**
+
+按 [创建 API 令牌](/) 一节方法，创建 `Ant-Gemini` 分组令牌并复制 API Key。
+
+**第二步：安装 Cline 插件**
+
+1. 打开 VSCode。
+2. 单击左侧 **扩展** 图标（或按 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd> / <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd>）。
+3. 搜索 **Cline**，找到后单击 **安装**。
+
+<Callout type="info" title="安装提示">
+  - 安装完成后左侧边栏会出现 Cline 图标。
+  - 首次使用需要配置 API Key。
+  - 建议安装最新版本以获得最佳体验。
+</Callout>
+
+**第三步：打开 Cline 界面**
+
+两种方式：
+
+- **方式一**：单击 VSCode 左侧边栏的 Cline 图标。
+- **方式二**：按 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>（macOS 用 <kbd>⌘ Command</kbd>），输入 `Cline: Open` 回车。
+
+**第四步：填写配置**
+
+打开 Cline 后单击 **API Configuration** 按钮，填写：
+
+```yaml
+API Provider: OpenAI-compatible
+Base URL: https://newapi.prorisehub.com/v1
+API Key: sk-*****
+Model ID: gemini-3-pro-preview
+```
+
+**配置参数说明**：
+
+| 配置项 | 推荐值 | 说明 |
+| --- | --- | --- |
+| API Provider | `OpenAI-compatible` | 推荐选择此项，支持更多模型 |
+| Base URL | `https://newapi.prorisehub.com/v1` | ProAPI 的 OpenAI 兼容端点 |
+| API Key | `sk-******` | ProAPI 控制台创建的令牌 |
+| Model ID | `gemini-3-pro-preview` | 推荐使用代码专精模型 |
+
+<Callout type="warn" title="安全提醒">
+  请妥善保管你的 API Key，不要在群聊或公开截图中泄露。
+</Callout>
+
+<Callout type="info" title="已有用户">
+  如果之前使用过 Cline，单击右上角 **⚙️ 设置** 按钮进入配置界面修改。
+</Callout>
+
+**第五步：完成**
+
+填写完毕后单击右上角 **Done** 即可。
+
+## 常见问题
+
+<Accordions>
+<Accordion title="为什么 Gemini CLI 不能粘贴图片 / 多模态输入失效？">
+
+Gemini CLI 当前的多模态支持不完善，CLI 自身限制导致剪贴板图片无法被识别。
+
+**变通方案**：
+
+- 改用 **Cline / Roo Code** 等 VSCode 插件接入 Gemini-3，可正常粘贴图片。
+- 或在 [API 端点章节](/api/gemini) 直接通过 `inlineData` 走 `/v1beta/.../generateContent` 提交 base64 图片。
+
+</Accordion>
+
+<Accordion title="Gemini CLI 报 'API key not valid' / 401？">
+
+按以下顺序排查：
+
+1. **系统环境变量与 `.env` 冲突** — 检查是否在 shell rc 中已 export `GEMINI_API_KEY`：
+
+   ```bash
+   echo $GEMINI_API_KEY
+   ```
+
+   若存在，删除 rc 中的 export，或修改为与 `.env` 一致。
+
+2. **`.env` 文件位置错误** — 必须放在 `~/.gemini/.env`，不是项目目录。
+
+3. **令牌分组错误** — Gemini CLI 必须用 `Ant-Gemini` 分组的令牌。
+
+4. **`GOOGLE_GEMINI_BASE_URL` 拼错** — 应为：
+
+   ```bash
+   GOOGLE_GEMINI_BASE_URL=https://newapi.prorisehub.com
+   ```
+
+   **不要带** `/v1` 后缀。
+
+</Accordion>
+
+<Accordion title="GEMINI.md 项目级提示词如何使用？">
+
+类似 Codex 的 `AGENTS.md`，Gemini CLI 支持在项目根创建 `GEMINI.md` 作为项目级提示词。加载顺序：
+
+1. `~/.gemini/GEMINI.md`（全局）
+2. 项目根 `GEMINI.md`
+3. 当前 cwd 的 `GEMINI.md`
+
+三者合并注入对话上下文。建议在项目根写入工程约定、目录结构与编码风格。
+
+</Accordion>
+
+<Accordion title="gemini-3-pro-preview 与 gemini-3-pro 有什么区别？">
+
+- **`gemini-3-pro-preview`** — Antigravity 逆向渠道暴露的预览名称，Ant-Gemini 分组下使用。
+- **`gemini-3-pro`** — Google 官方 API 名称，需要走官方付费渠道。
+
+ProAPI 的 Ant-Gemini 分组以 `preview` 后缀的模型名为准。**模型广场** 显示的名称才是最终可用的，不要凭官方文档直接配。
+
+</Accordion>
+
+<Accordion title="Cline 用 Gemini 报 'Provider does not support function calling'？">
+
+OpenAI 兼容协议下 Gemini 的 function calling 字段被翻译时可能丢失。解决方案：
+
+1. **关闭 Cline 的 MCP 调用**（在「MCP Servers」侧栏禁用所有 server），让 Gemini 走纯文本对话。
+2. **切到 Roo Code** — Roo Code 的 OpenAI Response 协议对 Gemini function calling 兼容更好。
+3. **改用更轻的任务** — Gemini 走 OpenAI 兼容时较适合纯代码补全和解释，不适合需要密集工具调用的 agent 场景。
+
+</Accordion>
+
+<Accordion title="Roo Code 与 Cline 是什么关系？">
+
+Roo Code 是 Cline 的 fork，相比 Cline 增加：
+
+- **自定义 Mode** — 可定义 Architect、Code、Ask 等专用角色。
+- **Orchestrator** — 多 mode 协作的编排器。
+- **OpenAI Response 请求格式** — 对 GPT-5 Responses API 与 Gemini-3 思考字段兼容更好。
+
+如果 Cline 出现 function calling 兼容问题，优先尝试 Roo Code。
+
+</Accordion>
+
+<Accordion title="Roo Code 找不到 'OpenAI Response' 选项？">
+
+旧版本 Roo Code 仅有 `OpenAI Compatible`。请升级：
+
+1. VSCode 扩展面板搜索 Roo Code。
+2. 单击「更新」到最新版（≥ 3.x）。
+3. 重启 VSCode。
+
+升级后 `API Provider` 下拉中会出现 **OpenAI Response** 选项。
+
+</Accordion>
+
+<Accordion title="Gemini-3 的 thinking / safetySettings 通过 OpenAI 兼容协议会丢失？">
+
+会。OpenAI 兼容协议不识别这些 Gemini 原生字段：
+
+- `thinking_budget` — 思考 token 上限
+- `safetySettings` — 4 类风险过滤阈值
+- `systemInstruction` — 独立的系统提示
+
+**如果必须使用这些字段**，请走 [Gemini 原生端点](/api/gemini)：
+
+```
+POST https://newapi.prorisehub.com/v1beta/models/{model}:generateContent
+```
+
+</Accordion>
+
+<Accordion title="Cherry Studio / Continue.dev / Cursor 怎么接入 Gemini-3？">
+
+| 客户端 | API Provider | Base URL | Model ID |
+| --- | --- | --- | --- |
+| Cherry Studio | OpenAI 兼容 | `https://newapi.prorisehub.com` | `gemini-3-pro-preview` |
+| Continue.dev | OpenAI | `https://newapi.prorisehub.com/v1` | `gemini-3-pro-preview` |
+| Cursor | OpenAI 自定义 | `https://newapi.prorisehub.com/v1` | `gemini-3-pro-preview` |
+
+<Callout type="warn" title="Cursor 注意">
+  Cursor 自定义模型需在 **Settings → Models → OpenAI API Key** 填入令牌，并在「Add model」中显式添加 `gemini-3-pro-preview`，否则下拉框默认只有 GPT 系列。
+</Callout>
+
+</Accordion>
+
+<Accordion title="如何在 Gemini CLI 中切换主题与认证方式？">
+
+Gemini CLI 支持下列常用配置项（写入 `~/.gemini/settings.json`）：
+
+```json
+{
+  "theme": "Dark",
+  "model": "gemini-2.5-pro",
+  "auth-type": "API_KEY"
+}
+```
+
+- `theme` — 内置主题如 `Dark` / `Light`。
+- `model` — 默认模型，与 `.env` 中的 `GEMINI_MODEL` 二选一即可。
+- `auth-type` — 第三方中转使用 `API_KEY`，官方账号使用 `OAUTH`。
+
+</Accordion>
+
+<Accordion title="第三方 CLI 用 Ant-Gemini 时如何启用联网搜索？">
+
+Ant-Gemini 分组的模型 **不自带联网**。需要联网时：
+
+1. **通过 MCP** — 接入 `tavily-mcp` 或 `brave-search-mcp` 等搜索 MCP。
+2. **改用 Grok 分组** — Grok 模型自带搜索能力，倍率仅 `x0.005`。
+3. **改用 `chub` Context Hub MCP** — ProAPI 推荐的文档检索方案。
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/api/gemini"
+    icon={<BotIcon />}
+    title="Gemini API 端点"
+    description="需要 thinkingBudget / safetySettings 等原生字段时走原生端点。"
+  />
+  <Card
+    href="/faq/codex"
+    icon={<TerminalIcon />}
+    title="Codex 相关问题"
+    description="Codex CLI 排错与高效用法。"
+  />
+  <Card
+    href="/cli/gemini"
+    icon={<MonitorIcon />}
+    title="Gemini CLI 配置"
+    description="Gemini CLI 基础配置流程与 .env 模板。"
+  />
+</Cards>

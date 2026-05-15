@@ -1,0 +1,50 @@
+---
+title: "条款与政策"
+description: "ProAPI 用户协议、隐私政策与支持区域政策导览"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { FileTextIcon, ShieldIcon, GlobeIcon } from 'lucide-react';
+
+## 章节导读
+
+本章收录 ProAPI 平台的全部法律性文件。**首次注册或商业接入前请务必完整阅读**，使用本服务即视为已知悉并同意全部条款。
+
+<Callout type="warn" title="文档约束力">
+  本目录下的所有政策构成您与 ProAPI 之间具有法律约束力的协议。如您不同意任何条款，请立即停止注册或使用本服务。
+</Callout>
+
+<Callout type="info" title="文档同步说明">
+  本地文档与官网 [`https://newapi.prorisehub.com/user-agreement`](https://newapi.prorisehub.com/user-agreement) 及 [`https://newapi.prorisehub.com/privacy-policy`](https://newapi.prorisehub.com/privacy-policy) 在 **2026-05-14** 完成同步。如本地文档与官网存在差异或版本更新，**以官网页面为准**。
+</Callout>
+
+## 文档导航
+
+<Cards>
+  <Card
+    href="/tos/user-agreement"
+    icon={<FileTextIcon />}
+    title="用户协议"
+    description="服务范围、合规要求、账户安全、计费规则、免责声明。"
+  />
+  <Card
+    href="/tos/privacy-policy"
+    icon={<ShieldIcon />}
+    title="隐私政策"
+    description="数据收集、内存转发模型、日志留存、用户权利。"
+  />
+  <Card
+    href="/tos/supported-regions"
+    icon={<GlobeIcon />}
+    title="支持的国家和地区"
+    description="服务器部署位置、上游厂商地区限制与中国大陆访问政策。"
+  />
+</Cards>
+
+## 阅读建议
+
+- **个人用户** — 优先阅读《用户协议》第 2 节「内容生成与合规规范」与第 4 节「计费规则与退款政策」。
+- **商业接入 / 二次分发** — 完整阅读《用户协议》全部章节，重点关注「免责声明」与「连带责任」条款。
+- **中国大陆用户** — **必读**《支持的国家和地区》。本平台服务器位于海外，不提供中国大陆境内直连节点，您需自行确保访问合规。
+- **担心数据隐私** — 阅读《隐私政策》第 4 节「模型数据流转说明」了解我们的无状态转发架构。

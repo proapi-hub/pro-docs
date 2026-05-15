@@ -1,0 +1,57 @@
+---
+title: "CC-Switch 使用教程"
+description: "CC-Switch 桌面客户端的完整使用指南"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { DownloadIcon, BotIcon, TerminalIcon, SparklesIcon } from 'lucide-react';
+
+## CC-Switch 介绍
+
+**从供应商切换器到 AI CLI 一体化管理平台。**
+
+![image-20260514145810234](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514145810234.png)
+
+[CC-Switch](https://ccswitch.ai/zh/) 统一管理 Claude Code、Codex 与 Gemini CLI 的供应商配置、MCP 服务器、Skills 扩展和系统提示词。使用 CC-Switch，你可以：
+
+- ✅ **一键切换 API 配置** —— 在多个 API 提供商之间快速切换
+- ✅ **可视化配置管理** —— 通过图形界面轻松管理所有配置
+- ✅ **内置 ProAPI 模板** —— 预设了 ProAPI 的配置模板
+- ✅ **MCP 服务器管理** —— 管理 Model Context Protocol 服务器
+- ✅ **系统托盘快捷操作** —— 通过托盘菜单快速切换
+
+<Callout type="info" title="温馨提示">
+  CC-Switch 已经内置了 ProAPI 的快捷配置模板，无需手动编辑配置文件！
+</Callout>
+
+## 阅读指南
+
+建议按以下顺序阅读：先完成「通用步骤」中的软件下载与环境检查，再根据需要配置对应的 CLI 客户端。
+
+<Cards>
+  <Card
+    href="/ccswitch/common"
+    icon={<DownloadIcon />}
+    title="通用步骤"
+    description="软件下载与环境检查 —— 配置前必做。"
+  />
+  <Card
+    href="/ccswitch/claude-code"
+    icon={<BotIcon />}
+    title="Claude Code 配置"
+    description="在 CC-Switch 中配置 Claude Code。"
+  />
+  <Card
+    href="/ccswitch/codex"
+    icon={<TerminalIcon />}
+    title="Codex 配置"
+    description="在 CC-Switch 中配置 Codex。"
+  />
+  <Card
+    href="/ccswitch/gemini"
+    icon={<SparklesIcon />}
+    title="Gemini 配置"
+    description="在 CC-Switch 中配置 Gemini CLI。"
+  />
+</Cards>

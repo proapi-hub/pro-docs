@@ -1,0 +1,104 @@
+---
+title: "Cherry Studio 入门"
+description: "Cherry Studio 客户端在 ProAPI 中的快速接入流程，附 Nano Banana 2 Pro 绘图实战"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 什么是 Cherry Studio
+
+[Cherry Studio](https://www.cherry-ai.com/) 是一款开源、跨平台的桌面 AI 客户端，支持 macOS / Windows / Linux。它的核心定位是「**用一个界面管理所有 LLM 提供商**」，特性包括：
+
+- **多供应商统一管理**：内置 OpenAI、Anthropic、Google Gemini、阿里通义、Azure 等十余种提供商模板，也支持任意 OpenAI 兼容端点（ProAPI 走这一种）。
+- **多应用模式**：除了普通对话，还有「**绘画**」「**翻译**」「**Mini App**」「**知识库**」「**Agent**」等场景化入口。
+- **本地优先**：对话与配置存储在本机，可选 WebDAV 备份。
+- **MCP 支持**：原生集成 Model Context Protocol，可接入 GitHub / Notion / 文件系统等工具。
+
+ProAPI 在 Cherry Studio 中的接入非常简单：**新增一个 OpenAI 兼容提供商，把 API 地址填 `https://newapi.prorisehub.com` 即可**。所有模型（GPT、Claude、Gemini、绘图、视频）都通过这一个提供商访问。
+
+***
+
+## 快速入门
+
+完成下面两步，即可在 Cherry Studio 中使用 ProAPI 的所有模型。
+
+1. 参照 [创建令牌分组](/#%E8%BF%9B%E5%85%A5%E4%BB%A4%E7%89%8C%E7%AE%A1%E7%90%86) 一章的教程，创建**令牌分组**为 `gemini` 的令牌。在创建好令牌后，点击图中复制按钮，将令牌复制到剪切板。
+
+![](/assets/image/Paint/banana/01.webp)
+
+2. 访问 [Cherry Studio](https://www.cherry-ai.com/) 官网下载安装客户端，然后按下图配置本文档站为内置资料源，方便随时检索教程。
+
+![image-20260515164253711](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515164253711.png)
+
+![image-20260515164438230](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515164438230.png)
+
+<Callout type="info" title="完成后你拥有什么">
+- 一份 `gemini` 分组的令牌（决定能调用哪些模型）。
+- 一个安装好的 Cherry Studio 客户端，并已能从内置文档站快速跳转到本教程。
+
+接下来选择你的使用场景：聊天直接配置一个 OpenAI 兼容提供商即可；绘图请继续阅读后续章节。
+</Callout>
+
+***
+
+
+## 实战：使用 Nano Banana 2 Pro 绘图
+
+下面的步骤演示如何在 Cherry Studio 中调用 ProAPI 的 `nano-banana` 系列绘图模型。其他绘图模型（如 `gpt-image-2`）的接入方式见 [GPT-Image-2 绘图教程](/paint/gpt-image)。
+
+1. 打开 Cherry Studio 软件，点击右上角设置按钮。
+
+![02.webp (1691×845)](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/02.webp)
+
+2. 选择左侧 `模型服务`，点击最下面的 `添加` 按钮。
+
+![03](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/03.webp)
+
+3. 在添加提供商窗口写入提供商名称（如 `Pro Api`）与提供商类型，保存。
+
+![image-20260515170019526](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515170019526.png)
+
+4. 在左侧列表中找到刚添加的 `Pro Api` 提供商，`API 密钥` 部分填入第一步复制的 `音视频分组` 分组令牌，`API 地址` 填写 `https://newapi.prorisehub.com`。
+
+![image-20260515170122256](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260515170122256.png)
+
+5. 点击下方的 `管理` 按钮，在弹出的模型列表中选择需要的绘图模型。ProAPI 已对常用 **比例 + 分辨率** 组合做了模型映射，可以如下图直接勾选。
+
+![](/assets/image/Paint/banana/06.webp)
+
+<Callout type="info" title="参数自动映射">
+你看到的模型名（如 `nano-banana-2k-16x9`）其实是 ProAPI 的扩展形式。直接调用 `nano-banana` 并附带 `quality` / `aspect_ratio` 参数也能达到同样效果，详见 [音视频模型参数映射](/api/media)。
+</Callout>
+
+6. 添加完成后效果如下。
+
+![](/assets/image/Paint/banana/07.webp)
+
+7. 点击左上角 `首页` 按钮回到主界面，点击当前助手右侧的设置按钮。在 `模型设置` 中找到 `流式输出` 并**务必关闭**，然后关闭窗口。
+
+![](/assets/image/Paint/banana/08.webp)
+
+![](/assets/image/Paint/banana/09.webp)
+
+<Callout type="warn" title="为什么要关流式">
+绘图接口不返回流式 SSE，开启流式会导致客户端按 JSON 解析失败，画面无法显示。所有 `nano-banana` / `gpt-image-2` / 视频模型调用都需要保持 `stream=false`。
+</Callout>
+
+8. 在顶部模型设置处，选择刚配置好的绘图模型。
+
+![](/assets/image/Paint/banana/10.webp)
+
+9. 开始尽情发挥你的想象吧～
+
+![](/assets/image/Paint/banana/11.webp)
+
+***
+
+## 下一步
+
+<Cards>
+  <Card title="GPT-Image-2 绘图教程" href="/paint/gpt-image" description="OpenAI 风格的图片生成与编辑流程" />
+  <Card title="音视频模型参数映射" href="/api/media" description="quality / aspect_ratio / duration 等扩展参数详解" />
+  <Card title="令牌与分组" href="/token/intro" description="不同分组的模型范围与计费倍率" />
+</Cards>

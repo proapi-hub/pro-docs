@@ -1,0 +1,138 @@
+---
+title: "Claude Desktop"
+description: "Anthropic 官方桌面客户端安装与第三方 API 接入"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { LayoutDashboardIcon, ServerIcon } from 'lucide-react';
+
+## 适用场景
+
+本教程介绍如何安装 **Anthropic 官方 Claude Desktop**，绕过登录并接入 ProAPI 的 **CC 分组**，在桌面端直接使用 Claude 模型。
+
+<Callout type="info" title="前置准备">
+  本流程依赖开发者模式，配置完成前无需登录 Anthropic 官方账号；但需要先在 ProAPI 中创建 **CC 分组** 令牌。
+</Callout>
+
+## 第一步：下载安装包
+
+打开 [Claude Desktop 下载页](https://claude.com/download)，在 **Desktop** 区域根据系统选择对应安装包。
+
+![Claude Desktop 下载页](/assets/image/Advanced/ClaudeDesktop/01.webp)
+
+## 第二步：安装客户端
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+Windows 安装时会请求 Anthropic 官方服务器。如果没有 **全局代理（TUN 模式）**，会出现网络错误：
+
+![Windows 安装报错示例](/assets/image/Advanced/ClaudeDesktop/02.webp)
+
+此时需在安装包所在目录打开 `cmd`，先确认代理软件端口（例如 Clash Verge 为 `7897`）：
+
+![查看代理端口](/assets/image/Advanced/ClaudeDesktop/03.webp)
+
+然后通过命令行强制走代理运行安装程序：
+
+```bash
+set HTTP_PROXY=http://127.0.0.1:7897
+set HTTPS_PROXY=http://127.0.0.1:7897
+"Claude Setup.exe"
+```
+
+![命令行启动安装](/assets/image/Advanced/ClaudeDesktop/04.webp)
+
+安装程序即可正常加载：
+
+![安装进行中](/assets/image/Advanced/ClaudeDesktop/05.webp)
+
+</Tab>
+<Tab value="macOS">
+
+macOS 双击 `.dmg` 即可正常安装，无需额外代理设置。
+
+![macOS 安装](/assets/image/Advanced/ClaudeDesktop/06.webp)
+
+</Tab>
+</Tabs>
+
+## 第三步：开启开发者模式
+
+打开 Claude Desktop，进入登录界面后 **不要登录**，先开启开发者模式。
+
+![登录界面](/assets/image/Advanced/ClaudeDesktop/07.webp)
+
+<Tabs items={['Windows', 'macOS']}>
+<Tab value="Windows">
+
+1. 鼠标点击邮箱输入框获取焦点。
+2. 键盘按 <kbd>Tab</kbd> 跳到左上角菜单。
+3. 按 <kbd>Enter</kbd> 依次进入 **Help → Troubleshooting → Enable developer mode**。
+
+![Windows 开启开发者模式](/assets/image/Advanced/ClaudeDesktop/08.webp)
+
+勾选 `Enable developer mode` 后等待重启：
+
+![已启用开发者模式](/assets/image/Advanced/ClaudeDesktop/09.webp)
+
+</Tab>
+<Tab value="macOS">
+
+直接在顶部菜单依次进入 **Help → Troubleshooting → Enable developer mode**：
+
+![macOS 菜单路径](/assets/image/Advanced/ClaudeDesktop/10.webp)
+
+勾选 `Enable developer mode` 后等待软件重启：
+
+![已启用开发者模式](/assets/image/Advanced/ClaudeDesktop/09.webp)
+
+</Tab>
+</Tabs>
+
+## 第四步：配置第三方 API
+
+1. 重启后再次进入菜单：**Developer → Configure third-party inference**。
+
+   ![Developer 菜单](/assets/image/Advanced/ClaudeDesktop/11.webp)
+
+2. 在弹窗中按下表填写：
+
+   | 字段 | 取值 |
+   | --- | --- |
+   | Gateway base URL | `https://newapi.prorisehub.com` |
+   | Gateway API key | ProAPI **CC 分组** 的 API Key |
+   | Skip login-mode chooser | 勾选开启 |
+
+   ![填写第三方接口](/assets/image/Advanced/ClaudeDesktop/12.webp)
+
+3. 点击右下角 **Apply locally** 使配置生效。
+
+<Callout type="warn" title="令牌分组必须选 CC">
+  Claude Desktop 走的是 Anthropic Messages 协议，必须使用 **CC 分组** 令牌。分组选错时会提示模型不存在或鉴权失败。
+</Callout>
+
+## 第五步：开始对话
+
+配置生效后即可正常进入对话界面：
+
+![对话界面](/assets/image/Advanced/ClaudeDesktop/13.webp)
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/advanced/aion-ui"
+    icon={<LayoutDashboardIcon />}
+    title="AionUI"
+    description="如果想要一个能同时管理多家模型的 GUI，试试 AionUI。"
+  />
+  <Card
+    href="/advanced/openclaw"
+    icon={<ServerIcon />}
+    title="OpenClaw"
+    description="服务器端部署 + Telegram Bot 接入方案。"
+  />
+</Cards>

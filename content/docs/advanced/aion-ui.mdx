@@ -1,0 +1,157 @@
+---
+title: "AionUI"
+description: "AionUI 多模型可视化客户端的下载、安装与 ProAPI 接入"
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { MonitorIcon, ServerIcon } from 'lucide-react';
+
+## 项目介绍
+
+**AionUI** 是一款面向 AI Agent 的可视化客户端，兼容 Gemini CLI、Claude Code、Codex、Qwen Code、Goose CLI、Auggie 等主流 Agent，提供图形化界面、本地数据存储与多模型统一管理。
+
+核心特性：
+
+- **统一图形界面** — 自动识别本地 CLI 工具，告别命令行。
+- **多会话并行** — 多个对话独立上下文互不干扰。
+- **本地数据安全** — 对话与文件均存储在本地 SQLite。
+- **9+ 格式预览** — PDF / Word / Excel / PPT / 代码 / Markdown / 图片 / HTML / Diff。
+- **AI 文件管理** — 批量重命名、自动分类。
+- **AI 图像生成** — 多模型图像生成与编辑。
+- **WebUI 远程访问** — 浏览器及移动端可用。
+- **多模型切换** — Gemini / Claude / OpenAI / Qwen / Ollama 等。
+- **完全开源** — Apache-2.0 许可证。
+
+更多文档：
+
+- [多代理模式设置](https://github.com/iOfficeAI/AionUi/wiki/ACP-Setup-Chinese)
+- [文件管理详细教程](https://github.com/iOfficeAI/AionUi/wiki/file-management)
+- [图像生成模型配置](https://github.com/iOfficeAI/AionUi/wiki/AionUi-Image-Generation-Tool-Model-Configuration-Guide-Chinese)
+- [WebUI 配置教程](https://github.com/iOfficeAI/AionUi/wiki/WebUI-Configuration-Guide-Chinese)
+
+## 第一步：下载安装
+
+<Tabs items={['macOS', 'Linux']}>
+<Tab value="macOS">
+
+通过 Homebrew 一键安装：
+
+```bash
+brew install aionui
+```
+
+也可前往 [GitHub Releases](https://github.com/iOfficeAI/AionUi/releases) 手动下载 `.dmg` 或 `.zip`（同时支持 Intel 与 Apple Silicon），运行安装程序按提示完成即可。
+
+</Tab>
+<Tab value="Linux">
+
+访问 [GitHub Releases](https://github.com/iOfficeAI/AionUi/releases) 获取最新版本号，将下面命令中的 `x.x.x` 替换为实际版本（如 `1.7.3`）：
+
+```bash
+# 下载 .deb 包
+wget https://github.com/iOfficeAI/AionUi/releases/latest/download/AionUi-x.x.x-linux-amd64.deb
+
+# 安装
+sudo dpkg -i AionUi-x.x.x-linux-amd64.deb
+```
+
+也可下载 `.AppImage` 直接运行。
+
+</Tab>
+</Tabs>
+
+## 第二步：创建 ProAPI 令牌
+
+回顾 [创建 API 令牌](/) 章节，按需要在 ProAPI 中创建对应分组的令牌并复制 API Key：
+
+| 目标模型 | 选择令牌分组 |
+| --- | --- |
+| Gemini | `Gemini` |
+| Claude | `CC` |
+| Codex | `Codex` |
+
+<Callout type="info" title="分组与模型一一对应">
+  AionUI 中每条 LLM 配置只对应一个分组。如果同时要用 Gemini 与 Claude，请在 ProAPI 中分别创建两条令牌并在 AionUI 中添加两份模型配置。
+</Callout>
+
+## 第三步：添加 LLM 模型
+
+1. 打开 AionUI，进入 **设置 → LLM 配置 → 添加模型**。
+
+   ![打开 LLM 配置](/assets/image/Advanced/AionUI/Setting_LLM.webp)
+
+2. 平台选择 **自定义**。
+
+   ![选择自定义平台](/assets/image/Advanced/AionUI/customizellm1.webp)
+
+3. 按下一节「模型配置」填入 API Key、请求地址与模型。
+
+   ![填入配置信息](/assets/image/Advanced/AionUI/inputinfo2.webp)
+
+4. 保存后返回主界面，选中刚配置的模型即可开始对话。
+
+   ![选择模型开始使用](/assets/image/Advanced/AionUI/newchat.webp)
+
+## 第四步：模型配置参数
+
+请按目标模型切换标签页查看对应参数：
+
+<Tabs items={['Gemini', 'Claude', 'Codex']}>
+<Tab value="Gemini">
+
+| 字段 | 取值 |
+| --- | --- |
+| API Key | ProAPI **Gemini 分组** 令牌 |
+| API 请求地址 | `https://newapi.prorisehub.com` |
+| 模型 | ProAPI 支持的 Gemini 模型名 |
+
+</Tab>
+<Tab value="Claude">
+
+| 字段 | 取值 |
+| --- | --- |
+| API Key | ProAPI **CC 分组** 令牌 |
+| API 请求地址 | `https://newapi.prorisehub.com` |
+| 模型 | ProAPI 支持的 Claude 模型名 |
+
+</Tab>
+<Tab value="Codex">
+
+| 字段 | 取值 |
+| --- | --- |
+| API Key | ProAPI **Codex 分组** 令牌 |
+| API 请求地址 | `https://newapi.prorisehub.com/v1` |
+| 模型 | ProAPI 支持的 Codex 模型名 |
+
+<Callout type="warn" title="Codex 必须带 /v1">
+  Codex 使用 OpenAI 兼容协议，请求地址末尾必须追加 `/v1`，否则会鉴权失败或路由错误。
+</Callout>
+
+</Tab>
+</Tabs>
+
+可在 [令牌与分组介绍](/token/intro) 查询各分组支持的具体模型名称。
+
+## 常见问题
+
+- [FAQ 常见问题](https://github.com/iOfficeAI/AionUi/wiki/FAQ-Chinese)
+- [完整配置与使用教程](https://github.com/iOfficeAI/AionUi/wiki/Configuration-Guides-Chinese)
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/advanced/claude-desktop"
+    icon={<MonitorIcon />}
+    title="Claude Desktop"
+    description="使用 Anthropic 官方桌面客户端接入 ProAPI。"
+  />
+  <Card
+    href="/advanced/openclaw"
+    icon={<ServerIcon />}
+    title="OpenClaw"
+    description="Linux 服务器 / macOS 终端 + Telegram Bot 接入方案。"
+  />
+</Cards>

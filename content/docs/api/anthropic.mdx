@@ -1,0 +1,320 @@
+---
+title: "Anthropic 兼容端点"
+description: "通过 /v1/messages 走 Claude 原生协议，支持 tool_use、thinking、cache_control 等完整能力"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { CpuIcon, SparklesIcon, TerminalIcon } from 'lucide-react';
+
+## 总览
+
+ProAPI 提供 Anthropic 官方完全兼容的 `/v1/messages` 端点，适合：
+
+- **Claude Code / Claude Desktop / Cline** 等原生 Anthropic SDK 客户端
+- 需要使用 `tool_use`（函数调用）、`thinking`（思考过程透出）、`cache_control`（提示缓存）等原生能力
+- 需要传入 PDF、图像等多模态输入的 Claude 调用
+
+| 端点 | 用途 |
+| --- | --- |
+| `POST /v1/messages` | Claude 消息接口（聊天补全） |
+| `POST /v1/messages/count_tokens` | 离线 token 计数 |
+
+<Callout type="info" title="Base URL">
+  Anthropic 端点的 base URL 是 `https://newapi.prorisehub.com`（**不要带 `/v1` 后缀**，SDK 会自动补上）。
+</Callout>
+
+<Callout type="warn" title="需要 Claude 系列分组">
+  调用 Claude 必须使用 Claude 分组令牌，可选：
+
+  - [`Ant-Claude`](/token/claude)（综合稳定）
+  - [`Kiro-Claude-高缓存`](/token/claude)（性价比）
+  - [`Claude-Windsurf`](/token/claude)（倍率最低，适合非主力 agent）
+
+  或 `default` 通用分组（无折扣）。
+</Callout>
+
+## 认证与请求头
+
+Anthropic 原生协议有两种鉴权头，ProAPI 都兼容：
+
+| 头部 | 示例值 | 说明 |
+| --- | --- | --- |
+| `x-api-key` | `sk-你的令牌` | Anthropic 官方默认头 |
+| `Authorization` | `Bearer sk-你的令牌` | 也接受，方便和 OpenAI 兼容协议共用 |
+| `anthropic-version` | `2023-06-01` | **必填**，否则 SDK 会拒绝响应 |
+| `Content-Type` | `application/json` | 必填 |
+
+## /v1/messages
+
+### 最小请求示例
+
+<Tabs items={['cURL', 'Python (anthropic SDK)', 'Node.js (anthropic SDK)']}>
+<Tab value="cURL">
+
+```bash
+curl https://newapi.prorisehub.com/v1/messages \
+  -H "x-api-key: sk-你的令牌" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 1024,
+    "system": "你是一名简洁的助理",
+    "messages": [
+      {"role": "user", "content": "用一句话解释什么是上下文工程"}
+    ]
+  }'
+```
+
+</Tab>
+<Tab value="Python (anthropic SDK)">
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic(
+    api_key="sk-你的令牌",
+    base_url="https://newapi.prorisehub.com",
+)
+
+resp = client.messages.create(
+    model="claude-sonnet-4-6",
+    max_tokens=1024,
+    system="你是一名简洁的助理",
+    messages=[
+        {"role": "user", "content": "用一句话解释什么是上下文工程"},
+    ],
+)
+print(resp.content[0].text)
+```
+
+</Tab>
+<Tab value="Node.js (anthropic SDK)">
+
+```js
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: "sk-你的令牌",
+  baseURL: "https://newapi.prorisehub.com",
+});
+
+const resp = await client.messages.create({
+  model: "claude-sonnet-4-6",
+  max_tokens: 1024,
+  system: "你是一名简洁的助理",
+  messages: [
+    { role: "user", content: "用一句话解释什么是上下文工程" },
+  ],
+});
+console.log(resp.content[0].text);
+```
+
+</Tab>
+</Tabs>
+
+### 常用参数
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `model` | string | ✅ | Claude 模型 ID，如 `claude-sonnet-4-6`、`claude-haiku-4-5-20251001` |
+| `max_tokens` | int | ✅ | **必填**，输出 token 上限 |
+| `messages` | array | ✅ | 仅 `user` / `assistant` 两种角色（`system` 单独传） |
+| `system` | string / array | – | 系统提示词，建议用数组形式并配合 `cache_control` |
+| `temperature` | number | – | `0`–`1`；与 `thinking` 同时使用时上游会强制为 `1` |
+| `tools` | array | – | 函数声明数组，工具调用 |
+| `tool_choice` | object | – | `{"type":"auto"}` / `{"type":"any"}` / `{"type":"tool","name":"xxx"}` |
+| `stream` | boolean | – | `true` 走 Anthropic 自有事件流（`event: content_block_delta`） |
+| `thinking` | object | – | `{"type":"enabled","budget_tokens":4000}`，开启思考过程透出 |
+| `metadata` | object | – | `{"user_id":"xxx"}`，对应业务的最终用户标识 |
+
+## 多模态输入
+
+`content` 支持文本 / 图片 / PDF 三种 block 类型混合：
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 2048,
+  "messages": [{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "总结这张图的关键信息："},
+      {"type": "image", "source": {
+        "type": "base64",
+        "media_type": "image/jpeg",
+        "data": "/9j/4AAQ..."
+      }}
+    ]
+  }]
+}
+```
+
+PDF 支持（最大 32 MB / 100 页）：
+
+```json
+{"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": "JVBERi0xLjQK..."}}
+```
+
+## 工具调用（tool_use）
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 1024,
+  "tools": [{
+    "name": "get_weather",
+    "description": "获取指定城市的天气",
+    "input_schema": {
+      "type": "object",
+      "properties": {"city": {"type": "string"}},
+      "required": ["city"]
+    }
+  }],
+  "messages": [{"role": "user", "content": "北京今天天气怎么样？"}]
+}
+```
+
+响应中如果出现 `stop_reason: "tool_use"`，意味着 Claude 需要调用工具：
+
+```json
+{
+  "stop_reason": "tool_use",
+  "content": [
+    {"type": "text", "text": "我帮你查一下"},
+    {"type": "tool_use", "id": "toolu_xx", "name": "get_weather", "input": {"city": "北京"}}
+  ]
+}
+```
+
+把工具结果作为新一轮 `tool_result` 消息回传即可。
+
+## 提示缓存（cache_control）
+
+`Kiro-Claude-高缓存` 分组对缓存命中有显著折扣，强烈建议给大段不变的 system / 文档块标记缓存点：
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 1024,
+  "system": [
+    {"type": "text", "text": "你是 ProAPI 文档助理..."},
+    {
+      "type": "text",
+      "text": "<这里放 10K+ token 的长文档>",
+      "cache_control": {"type": "ephemeral"}
+    }
+  ],
+  "messages": [{"role": "user", "content": "文档第三章主要讲什么？"}]
+}
+```
+
+命中缓存时响应里的 `usage` 会出现：
+
+```json
+"usage": {
+  "input_tokens": 50,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 12345,
+  "output_tokens": 280
+}
+```
+
+<Callout type="info" title="缓存折扣">
+  缓存有 5 分钟 TTL，频繁调用同一份文档时能将成本压到原价的 10% 左右。
+</Callout>
+
+## 思考过程（thinking）
+
+适用于 `claude-opus-*` / `claude-sonnet-*-thinking` 等支持思考的模型：
+
+```json
+{
+  "model": "claude-opus-4-7",
+  "max_tokens": 8192,
+  "thinking": {"type": "enabled", "budget_tokens": 4000},
+  "messages": [{"role": "user", "content": "证明 √2 是无理数"}]
+}
+```
+
+返回结构：
+
+```json
+{
+  "content": [
+    {"type": "thinking", "thinking": "...内部推理过程..."},
+    {"type": "text", "text": "证明如下：..."}
+  ]
+}
+```
+
+## /v1/messages/count_tokens
+
+不消耗配额，预估输入 token 数：
+
+```bash
+curl https://newapi.prorisehub.com/v1/messages/count_tokens \
+  -H "x-api-key: sk-你的令牌" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "messages": [{"role": "user", "content": "测试一下长度"}]
+  }'
+```
+
+## 常见问题
+
+<Accordions>
+<Accordion title="Q1：能不能用 OpenAI 协议调 Claude？">
+
+可以，走 [`/v1/chat/completions`](/api/openai)，但 `tool_use` / `thinking` / `cache_control` 会被翻译或丢失。要完整能力请用 `/v1/messages`。
+
+</Accordion>
+<Accordion title="Q2：返回 404 model_not_found？">
+
+模型名拼写错了，或当前令牌分组里没有该模型。到「模型广场」核对分组下的实际模型 ID。
+
+</Accordion>
+<Accordion title="Q3：anthropic-version 必须填什么？">
+
+推荐 `2023-06-01`（最稳）。SDK 会自动带，不需要手动写。
+
+</Accordion>
+<Accordion title="Q4：Claude Code 怎么接？">
+
+参考 [Claude Code CLI 配置](/cli/claude-code)，本质就是设置：
+
+```bash
+ANTHROPIC_BASE_URL=https://newapi.prorisehub.com
+ANTHROPIC_AUTH_TOKEN=sk-你的令牌
+```
+
+</Accordion>
+</Accordions>
+
+## 下一步
+
+<Cards>
+  <Card
+    href="/api/openai"
+    icon={<CpuIcon />}
+    title="OpenAI 兼容端点"
+    description="第三方客户端（Cherry Studio / Cline / Cursor）通用接入方式。"
+  />
+  <Card
+    href="/api/gemini"
+    icon={<SparklesIcon />}
+    title="Gemini 兼容端点"
+    description="Google 官方 SDK 与 thinkingBudget / safetySettings 等独有字段。"
+  />
+  <Card
+    href="/cli/claude-code"
+    icon={<TerminalIcon />}
+    title="Claude Code 配置"
+    description="使用 Claude Code CLI 接入 ProAPI 的完整步骤。"
+  />
+</Cards>

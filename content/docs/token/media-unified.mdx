@@ -1,0 +1,74 @@
+---
+title: "音视频与统一分组"
+description: "音视频模型、统一分组的来源、倍率与适用场景"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## 音视频与统一分组
+
+`音视频模型` 用于画图 / 视频生成，`统一分组` 可调用站内全部模型。两者倍率均为 `x1`。
+
+<Callout type="info">
+各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
+</Callout>
+
+<Tabs items={['音视频模型', '统一分组']}>
+<Tab value="音视频模型">
+
+- **分组介绍：**
+
+  - 音视频模型渠道聚合分组，聚合了多个画图 / 视频 / 音频生成渠道。需要生成图片或视频时选择此分组。
+
+- **计费倍率：** `x1`
+
+- **适用 CLI / 工具：**
+
+  - API 调用（画图 / 视频生成接口）
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - 画图：`nano-banana`、`nano-banana-2`、`nano-banana-pro`、`gpt-image-2`、`imagen-4`
+  - 视频：`sora-2`、`sora-2-pro`、`veo-3.1`、`veo-3.1-fast`、`veo-3.1-lite`、`veo-3.1-ref`、`veo-3.1-i2v`、`veo-3.1-i2v-fast`、`veo-3.1-i2v-lite`、`veo-3.1-interpolation`、`veo-3.1-extend`、`kling-3.0`、`kling-o3`
+
+<Callout type="info">
+不同渠道支持的模型略有差异，且画图 / 视频模型按次计费，调用前请到模型广场确认价格与可用性。
+</Callout>
+
+</Tab>
+<Tab value="统一分组">
+
+- **分组介绍：**
+
+  - 统一的模型分组，可以调用站内的**所有模型**，无需在不同分组间切换。代价是计价统一为 `x1` 倍，享受不到各专用分组的折扣。适合不想折腾、追求方便的用户。
+
+- **计费倍率：** `x1`
+
+- **适用 CLI / 工具：**
+
+  - 全部 CLI（Claude Code / Codex / Gemini）
+  - 全部第三方工具
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - 站内所有模型（等同于各专用分组模型的并集）
+
+<Callout type="warn" title="省钱提示">
+统一分组方便但**不划算**。如果你长期固定使用某一类模型（如 Claude Code、Codex），强烈建议改用对应的专用分组，倍率最低能到 `x0.005`。
+</Callout>
+
+</Tab>
+</Tabs>
+
+***
+
+

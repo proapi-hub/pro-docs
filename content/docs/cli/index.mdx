@@ -1,0 +1,48 @@
+---
+title: "CLI 配置教程"
+description: "手动配置 Claude Code、Codex、Gemini CLI 的完整指南"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { CheckCircleIcon, BotIcon, TerminalIcon, SparklesIcon } from 'lucide-react';
+
+<Callout type="info" title="可选阅读">
+  本章为**手动配置** CLI 的教程。如果你已经使用 [CC-Switch](/ccswitch) 完成了配置，或者对 CLI 环境配置已有经验，可以跳过本章。
+</Callout>
+
+手动配置适合以下场景：
+- 不想安装 CC-Switch 桌面端
+- 需要在服务器 / 无 GUI 环境中配置
+- 希望精确控制配置文件内容
+
+## 配置流程
+
+建议按顺序阅读：先完成环境检查，再配置你需要的 CLI 工具。
+
+<Cards>
+  <Card
+    href="/cli/env-check"
+    icon={<CheckCircleIcon />}
+    title="环境检查"
+    description="确认 Node.js 已安装、CLI 工具已就绪 —— 配置前必做。"
+  />
+  <Card
+    href="/cli/claude-code"
+    icon={<BotIcon />}
+    title="Claude Code 配置"
+    description="手动配置 settings.json 接入 ProAPI。"
+  />
+  <Card
+    href="/cli/codex"
+    icon={<TerminalIcon />}
+    title="Codex 配置"
+    description="配置 config.toml 与 auth.json 接入 ProAPI。"
+  />
+  <Card
+    href="/cli/gemini"
+    icon={<SparklesIcon />}
+    title="Gemini 配置"
+    description="配置 .env 文件接入 ProAPI。"
+  />
+</Cards>

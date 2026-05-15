@@ -24,3 +24,11 @@ yarn-error.log*
 .env*.local
 .vercel
 next-env.d.ts
+
+# omc workspace
+.omc/
+**/.omc/
+
+# editor / scratch
+batch-scrape-*.md
+*.zip

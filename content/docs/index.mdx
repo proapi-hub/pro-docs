@@ -1,13 +1,204 @@
 ---
-title: Hello World
-description: Your first document
+title: "快速开始"
+description: "从 0 开始的 ProAPI 使用之旅，覆盖注册、充值、令牌与 CLI"
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { BookOpenIcon, HelpCircleIcon, KeyIcon } from 'lucide-react';
 
-## What is Next?
+## 快速开始
+
+<Callout type="info" title="部署前先读这两份">
+  我们一直提倡 **"授人以鱼，不如授人以渔"**。看完快速入门，能解答你今后 **90%** 的疑问。
+</Callout>
+
+
+
+从 0 开始的 ProAPI 使用之旅，一步步来，准没问题！
+
+## 第一步：注册账号
+
+- 注册入口：[https://newapi.prorisehub.com/sign-up](https://newapi.prorisehub.com/sign-up)
+
+![](https://bu.dusays.com/2026/05/13/6a04943282679.png)
+
+- 打开注册入口后，点击页面右上角的“注册”。
+- 如果你在登录页，也可以点击底部“没有账户？注册”进入注册流程.
+
+<Tabs items={['方式一（推荐）', '方式二']}>
+<Tab value="方式一（推荐）">
+
+1. 点击“使用 Github 继续”。
+2. 在弹窗中选择要绑定的 Github 账号并完成授权。
+3. 授权成功后，系统会自动创建账号并登录。
+
+使用 Github 注册无需额外设置密码，后续登录时继续选择同一个 Github 账号即可。
+
+</Tab>
+<Tab value="方式二">
+
+1. 点击“使用用户名注册”。
+2. 填写邮箱、用户名和密码。
+3. 按页面提示提交，完成注册。
+
+<Callout type="warn" title="账号安全提示">
+  邮箱会用于接收验证与通知；密码建议使用字母、数字和特殊字符组合。请妥善保管登录凭证，避免账号被盗用。
+</Callout>
+
+</Tab>
+</Tabs>
+## 第二步：登录账号
+
+- 登录入口：[https://newapi.prorisehub.com/sign-in](https://newapi.prorisehub.com/sign-in)
+
+![](https://bu.dusays.com/2026/05/13/6a04947b57c29.png)
+
+
+如果点击“使用 Github 继续”后出现“错误：OIDC 获取 Token 失败，请检查设置！”，或是如下图中的问题，通常是浏览器缓存或 Cookie 状态异常导致。
+
+![](https://bu.dusays.com/2026/05/13/6a0495010054a.png)
+
+可以先清空浏览器缓存后重试，按对应系统的快捷键打开"清除浏览数据"页面：
+
+<Tabs items={['Windows / Linux', 'macOS']}>
+<Tab value="Windows / Linux">
+
+按 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Delete</kbd> 打开 Chrome 的清除浏览数据页面。
+
+</Tab>
+<Tab value="macOS">
+
+按 <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>Delete</kbd> 打开 Chrome 的清除浏览数据页面。
+
+</Tab>
+</Tabs>
+
+如果清理缓存后仍然无效，请手动删除 `newapi.prorisehub.com` 相关 Cookie：
+
+1. 在登录页按 <kbd>F12</kbd> 打开开发者工具。
+2. 进入“应用”面板。
+3. 在左侧依次选择“存储” → “Cookie” → `https://newapi.prorisehub.com`。
+4. 删除 `session`、`TDC_itoken` 等站点 Cookie 后刷新页面，再重新登录.
+
+![](https://bu.dusays.com/2026/05/13/6a049624ca858.png)
+
+## 第三步：购买额度
+
+登录控制台后，进入左侧“钱包管理”页面购买额度。
+
+![](https://bu.dusays.com/2026/05/13/6a0496b962142.png)
+
+1. 在“选择充值额度”中选择固定额度，或在“自定义额度”中输入要充值的金额。
+
+<Callout type="info" title="支付说明">
+  目前充值比例为 `1:1`，即 **1 元人民币等同于 1 美元额度**。如果使用支付宝或微信支付时没有弹出支付页面，请先关闭代理后重试。
+</Callout>
+
+## 第四步：创建 API 令牌
+
+登录后进入控制台面板，左侧选择“令牌管理”。
+
+![](https://bu.dusays.com/2026/05/13/6a049758c425a.png)
+
+### 进入令牌管理
+
+1. 在左侧菜单点击“令牌管理”。
+2. 点击页面上方的“添加令牌”。
+
+### 创建新令牌
+
+在弹窗中填写令牌信息：
+
+![](https://bu.dusays.com/2026/05/13/6a0497ead305e.png)
+
+- 令牌名称：用于区分不同用途，例如 `Claude Code`、`Codex`、`Gemini`。
+- 令牌分组：必须选择，分组决定这个令牌可以使用哪些模型。
+- 过期时间：默认“永不过期”，也可以按需要设置有效期。
+- 新建数量：一般保持 `1` 即可。
+- 额度设置：开启“无限额度”时，令牌实际可用额度仍受账户余额限制。
+- 访问限制：不熟悉时建议先保持默认，不要开启模型限制或 IP 白名单。
+
+<Callout type="warn" title="令牌分组一定要选对">
+  令牌分组会直接影响可用模型。Claude Code、Codex、Gemini CLI 需要选择对应分组；分组选错时，配置 CLI 易出现"模型不存在"或无法调用。
+
+  不确定分组适用场景？请先阅读 [ProAPI 各分组介绍](/token/intro)。
+</Callout>
+
+填写完成后，点击右下角"提交"完成创建。
+
+### 查看分组可用模型
+
+你可以在“模型广场”查看每个令牌分组下支持哪些模型。
+
+![](https://bu.dusays.com/2026/05/13/6a0498ac1c0f2.png)
+
+1. 点击页面右上角“模型广场”。
+2. 在左侧“可用令牌分组”中选择分组。
+3. 右侧模型卡片会显示该分组可用的模型、价格和折扣倍率。
+
+如果你想了解折扣含义，可以点击模型广场右上方的“折扣说明”。
+
+## 第五步：环境检查
+
+在配置 Claude Code、Codex 或 Gemini CLI 之前，请先确认本机已经正确安装 Node.js。
+
+在 Windows、macOS 或 Linux 终端中执行：
+
+```bash
+npm list -g --depth-0
+```
+
+如果命令可以正常执行，说明 Node.js 与 npm 已经可用。即使输出中没有安装任何全局包，也不影响后续配置。
+
+如果提示"命令未找到"或类似错误，说明当前环境还没有安装 Node.js，或安装后没有正确加入系统环境变量。请先完成 Node.js 安装，再重新执行上面的命令确认。
+
+<Callout type="warn" title="必须先完成环境检查">
+  CLI 工具依赖 Node.js 和 npm。环境没有准备好时，后续安装 Claude Code、Codex、Gemini CLI 都可能失败。
+</Callout>
+
+## 第六步：配置 CLI 工具
+
+ProAPI 支持在命令行中使用 Claude Code、Codex、Gemini CLI
+
+### API 端点说明
+
+登录控制台后，可以在"数据看板"右侧查看当前可用的 API Endpoint。
+
+![image-20260514140732371](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514140732371.png)
+
+
+
+
+
+使用 OpenAI 兼容格式的客户端（Codex、OpenAI SDK、Cherry Studio 的 OpenAI 兼容配置等）时，请在 API 地址后追加 `/v1`：
+
+  ```bash
+  https://newapi.prorisehub.com/v1
+  ```
+
+  Claude Code、Gemini CLI 等专用配置请以对应教程为准。
+
+## 下一步
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card
+    href="/token/intro"
+    icon={<BookOpenIcon />}
+    title="模型分组介绍"
+    description="了解 ProAPI 的令牌分组、可用模型与限速策略 —— 配置前必读。"
+  />
+  <Card
+    href="/faq/claude-code"
+    icon={<HelpCircleIcon />}
+    title="常见问题"
+    description="覆盖 Claude Code / Codex / Gemini 的高频排错与最佳实践。"
+  />
+  <Card
+    href="/ccswitch"
+    icon={<KeyIcon />}
+    title="CC-Switch 配置"
+    description="一键切换多家供应商配置，桌面端可视化管理。"
+  />
 </Cards>

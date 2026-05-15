@@ -1,0 +1,10 @@
+{
+  "title": "CC-Switch",
+  "pages": [
+    "index",
+    "common",
+    "claude-code",
+    "codex",
+    "gemini"
+  ]
+}

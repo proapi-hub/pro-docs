@@ -1,8 +1,10 @@
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
+import { rehypeCodeDefaultOptions } from 'fumadocs-core/mdx-plugins';
+import { transformerTwoslash } from 'fumadocs-twoslash';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
-// You can customize Zod schemas for frontmatter and `meta.json` here
-// see https://fumadocs.dev/docs/mdx/collections
 export const docs = defineDocs({
   dir: 'content/docs',
   docs: {
@@ -18,6 +20,19 @@ export const docs = defineDocs({
 
 export default defineConfig({
   mdxOptions: {
-    // MDX options
+    // 关闭 fumadocs 的图片处理（避免转换为 next/image，配合 mdx-components 里的 img: RawImg）
+    remarkImageOptions: false,
+    remarkPlugins: [remarkMath],
+    rehypePlugins: (v) => [[rehypeKatex, { strict: false }], ...v],
+    rehypeCodeOptions: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      transformers: [
+        ...(rehypeCodeDefaultOptions.transformers ?? []),
+        transformerTwoslash(),
+      ],
+    },
   },
 });
