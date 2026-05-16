@@ -80,8 +80,15 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/pro-docs
+            # 写入运行时环境变量（仅本地可读）
+            umask 077
+            cat > .env <<'ENVEOF'
+            PROAPI_BASE_URL=${{ secrets.PROAPI_BASE_URL }}
+            PROAPI_API_KEY=${{ secrets.PROAPI_API_KEY }}
+            PROAPI_DEFAULT_MODEL=${{ secrets.PROAPI_DEFAULT_MODEL }}
+            ENVEOF
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             docker compose pull
-            docker compose up -d --remove-orphans
+            docker compose up -d --remove-orphans --force-recreate
             docker image prune -f
             docker compose ps
