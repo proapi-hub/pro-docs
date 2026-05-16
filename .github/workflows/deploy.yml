@@ -69,6 +69,23 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout (for compose file)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docker-compose.yml
+          sparse-checkout-cone-mode: false
+
+      - name: Sync docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
+          source: docker-compose.yml
+          target: /opt/pro-docs
+
       - name: Trigger pull & restart on server
         uses: appleboy/ssh-action@v1.2.0
         with:
