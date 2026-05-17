@@ -387,8 +387,8 @@ x-anthropic-billing-header: cc_version=2.1.xx.abc; cc_entrypoint=claude-code; cc
 
 **有什么副作用？** 没有。这个字段只是 Anthropic 用于内部归因统计的标签，关闭后不影响任何功能、模型行为或响应质量，对接 ProAPI 时纯收益。
 
-<Callout type="info" title="提示">
-  通过 [CC-Switch](/ccswitch/claude-code) 配置的用户，此项已由软件自动注入，无需手动添加。
+<Callout type="warn" title="CC-Switch 用户也需要手动配置">
+  截至当前版本，CC-Switch **不会自动注入**此环境变量（[功能请求 #2025](https://github.com/farion1231/cc-switch/issues/2025) 仍在 open 状态）。如果你通过 CC-Switch 配置，请在其「环境变量」编辑框中手动追加 `CLAUDE_CODE_ATTRIBUTION_HEADER=0`，否则缓存优化无效。
 </Callout>
 
 </Accordion>
