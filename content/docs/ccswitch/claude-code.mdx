@@ -31,7 +31,15 @@ ProAPI 的 Claude 系列分组（`Ant-Claude` / `Kiro-Claude-高缓存` / `Claud
 
 ![image-20260514151602144](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514151602144.png)
 
+<Callout type="warn" title="务必追加环境变量 CLAUDE_CODE_ATTRIBUTION_HEADER">
+  CC-Switch 目前**不会自动注入**该变量（[功能请求 #2025](https://github.com/farion1231/cc-switch/issues/2025) 仍在 open）。请在当前配置模态框的「环境变量」编辑区追加一行：
 
+  ```text
+  CLAUDE_CODE_ATTRIBUTION_HEADER=0
+  ```
+
+  这是接入第三方中转 API 时**最关键的缓存优化开关**——不加的话，Claude Code 2.1.36+ 注入的动态归因标识会让 6.8 万 tokens 的 system prompt 每次都缓存失败，实测费用暴涨约 10 倍、首包延迟从 2 秒变成 17 秒。详细原理参见 [FAQ](/faq/claude-code#为什么配置里有-claude_code_attribution_header0强烈建议保留)。
+</Callout>
 
 6. 添加成功后，主界面会显示我们配置的分组。在右侧点击「启用」按钮，显示「使用中」即配置完成。
 

@@ -101,3 +101,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 </Tab>
 </Tabs>
+
+<Callout type="warn" title="请勿删除 CLAUDE_CODE_ATTRIBUTION_HEADER 这一行">
+  这是接入第三方中转 API 时**最关键的缓存优化开关**。Claude Code `2.1.36` 起会在 system prompt 中注入动态归因标识，导致约 6.8 万 tokens 的前缀每次都无法命中缓存——实测费用最高暴涨 10 倍、首包延迟从 2 秒变成 17 秒。设为 `"0"` 后该 header 被关闭，对功能、模型行为均无副作用。详细原理参见 [FAQ](/faq/claude-code#为什么配置里有-claude_code_attribution_header0强烈建议保留)。
+</Callout>
