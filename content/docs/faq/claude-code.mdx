@@ -361,6 +361,38 @@ export NODE_OPTIONS="--use-openssl-ca"
 
 </Accordion>
 
+<Accordion title="为什么配置里有 CLAUDE_CODE_ATTRIBUTION_HEADER=0？（强烈建议保留）">
+
+这是接入第三方中转 API（包括 ProAPI）时**最重要的一项环境变量**，直接关系到你的请求速度和费用。
+
+**背景**：Claude Code `2.1.36` 起会在每次请求的 system prompt 开头注入一段动态归因标识：
+
+```text
+x-anthropic-billing-header: cc_version=2.1.xx.abc; cc_entrypoint=claude-code; cch=00000;
+```
+
+其中 `cc_version` 后缀（如 `.abc`）是根据当前会话的首条用户消息计算出的哈希。**每开一个新会话，这段文本就会变化**，导致：
+
+- 庞大的 system prompt（约 6.8 万 tokens）**前缀**每次都不一样
+- 中转 API 的 Prompt Cache **无法命中**，每次都要完整处理 system prompt
+- 实测费用最高暴涨 10 倍、首包延迟从 2 秒变成 17 秒
+
+**配置后效果**：
+
+| 指标 | 关闭前 | 关闭后 |
+| --- | --- | --- |
+| Cache Read tokens | 512 | 68,096 |
+| 单次费用 | $0.204 | $0.021 |
+| API 首包延迟 | ~17s | ~2s |
+
+**有什么副作用？** 没有。这个字段只是 Anthropic 用于内部归因统计的标签，关闭后不影响任何功能、模型行为或响应质量，对接 ProAPI 时纯收益。
+
+<Callout type="info" title="提示">
+  通过 [CC-Switch](/ccswitch/claude-code) 配置的用户，此项已由软件自动注入，无需手动添加。
+</Callout>
+
+</Accordion>
+
 <Accordion title="如何关闭遥测与终端标题修改？">
 
 `settings.json.env` 加：
