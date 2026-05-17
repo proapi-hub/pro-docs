@@ -1,6 +1,6 @@
 ---
 title: "Claude 系列分组"
-description: "Ant-Claude、Kiro-Claude-高缓存、Claude-Windsurf 三个 Claude 分组的来源、倍率与适用场景"
+description: "Ant-Claude、Kiro-Claude-高缓存、claude-max、Claude-Windsurf 四个 Claude 分组的来源、倍率与适用场景"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -8,22 +8,23 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Claude 系列分组
 
-三个 Claude 分组来源不同、价格不同，按需选择。同为 Claude 模型，可直接用于 Claude Code，也可接入第三方工具。
+四个 Claude 分组来源不同、价格不同，按需选择。同为 Claude 模型，可直接用于 Claude Code，也可接入第三方工具。
 
 <Callout type="info" title="怎么选">
-- 追求**稳定**：选（...）暂时还没有，后续会上架官转纯血模型
+- 追求**官方纯血稳定**：选 `claude-max`（AWS External Anthropic 官方直通，质量与稳定性最高）
 - 追求**性价比**：选 `Kiro-Claude-高缓存` 或 `Claude-Windsurf`
 - 各分组模型列表为编写时快照，最终以 **模型广场** 实时列表为准。
+- 所有分组对 VIP 用户额外 **7 折**、Premium 用户额外 **5 折**，详见 [令牌与分组首页](/token/intro)。
 </Callout>
 
-<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'Claude-Windsurf']}>
+<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'claude-max', 'Claude-Windsurf']}>
 <Tab value="Ant-Claude">
 
 - **分组介绍：**
 
   - 反重力官方 Claude 中转，逆向 Google Antigravity 得到的 Claude 模型渠道。提供 Opus / Sonnet / Haiku 全系列，是 Claude 分组中**综合稳定性最好**的一档，适合作为日常主力，但谷歌风控策略逐步严格，很大部分情况下请求偏慢，质量中等，约官方满血版的 80% 智力，在早上的时间点可能会出现空号的情况，不推荐
 
-- **计费倍率：** `x0.4`
+- **计费倍率：** `x0.4`（VIP `x0.28` · Premium `x0.20`）
 
 - **适用 CLI / 工具：**
 
@@ -48,7 +49,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
   - 逆向 Kiro（AWS Q）得到的 Claude 模型渠道，**开启了高缓存策略**，价格相较 Ant-Claude 更低。上下文 200K ~ 1M，支持思考，适合日常使用、任务规划、翻译等场景。
 
-- **计费倍率：** `x0.3`
+- **计费倍率：** `x0.3`（VIP `x0.21` · Premium `x0.15`）
 
 - **适用 CLI / 工具：**
 
@@ -73,12 +74,41 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 </Callout>
 
 </Tab>
+<Tab value="claude-max">
+
+- **分组介绍：**
+
+  - **AWS External Anthropic 官方直通**（`aws-external-anthropic.us-east-1.api.aws`），由 Anthropic 官方在 AWS 上提供的 Claude Messages API 直连入口。**质量、稳定性、上下文 / 缓存表现均与 Anthropic 官方一致**，是站内 Claude 系列中**唯一非逆向、非聚合**的渠道，适合对稳定性和合规性敏感的生产环境。
+  - 鉴权方式为 AWS 官方下发的长期 API Key + 工作区（workspace）隔离。
+
+- **计费倍率：** `x0.6`（VIP `x0.42` · Premium `x0.30`）
+
+- **适用 CLI / 工具：**
+
+  - Claude Code（推荐，最稳定）
+  - Cline / Cursor / 任意支持 Anthropic Messages API 的客户端
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `claude-sonnet-4-5-20250929`（首发，已配置完整定价）
+  - `claude-opus-4-7`、`claude-opus-4-6`、`claude-opus-4-5-20251101`
+  - `claude-sonnet-4-6`、`claude-haiku-4-5-20251001`
+
+<Callout type="info" title="为什么倍率比 Ant-Claude 高">
+本分组走 AWS 官方付费 API，成本高于逆向渠道，因此倍率 `x0.6` 略高于 `Ant-Claude` 的 `x0.4`。**追求稳定与合规选 `claude-max`，追求性价比选 `Ant-Claude`**。
+</Callout>
+
+</Tab>
 <Tab value="Claude-Windsurf">
 
 - **分组介绍：**
   - 逆向 Windsurf 得到的 Claude 分组，是 Claude 系列中 **倍率最低** 的一档，但由于 windsurf 的技术限制，windsurf 模型在长期工作中不如其他渠道，不适合作为编程 agent 模型，适合接入自己的服务作为任务模型
   
-- **计费倍率：** `x0.25`
+- **计费倍率：** `x0.25`（VIP `x0.175` · Premium `x0.125`）
 
 - **适用 CLI / 工具：**
 

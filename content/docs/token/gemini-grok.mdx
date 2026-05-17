@@ -8,7 +8,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Gemini 与 Grok 分组
 
-`Ant-Gemini` 面向 Gemini CLI，`Grok` 提供 Grok 全系列模型，两者倍率都极低。
+`Ant-Gemini` 面向 Gemini CLI，`Grok` 提供 Grok 全系列模型（含画图 / 视频）。
 
 <Callout type="info">
 各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
@@ -19,9 +19,9 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 - **分组介绍：**
 
-  - 反重力官方 Gemini 中转，逆向 Google Antigravity 得到的 Gemini 模型渠道。提供 Gemini 3 / 2.5 全系列，并包含画图模型。倍率低至 `x0.1`，非常适合日常使用。
+  - 反重力官方 Gemini 中转，逆向 Google Antigravity 得到的 Gemini 模型渠道。提供 Gemini 3 / 2.5 全系列，并包含画图模型。
 
-- **计费倍率：** `x0.1`
+- **计费倍率：** `x0.5`（VIP `x0.35` · Premium `x0.25`）
 
 - **适用 CLI / 工具：**
 
@@ -52,9 +52,9 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 - **分组介绍：**
 
-  - Grok 官方渠道中转，倍率全站最低（`x0.005`）。提供 Grok 4.20 全系列（含 reasoning / expert / fast / super 等变体），以及 `grok-imagine` 画图与视频模型。
+  - Grok 官方渠道中转，倍率全站最低（`x0.005`）。提供 Grok 4.20 全系列（含 reasoning / expert / fast / super 等变体）。`grok-imagine` 画图与视频模型已迁移至 **音视频模型** 分组（按全额 `x1` 计费）。
 
-- **计费倍率：** `x0.005`
+- **计费倍率：** `x0.005`（VIP `x0.0035` · Premium `x0.0025`）
 
 - **适用 CLI / 工具：**
 
@@ -68,7 +68,10 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 - **包含模型（编写时快照）：**
 
   - 对话 / 推理：`grok-4.3-beta`、`grok-4.20-auto`、`grok-4.20-fast`、`grok-4.20-expert`、`grok-4.20-0309`、`grok-4.20-0309-reasoning`、`grok-4.20-0309-reasoning-super`、`grok-4.20-0309-non-reasoning`、`grok-4.20-0309-non-reasoning-super`、`grok-4.20-0309-super`
-  - 画图 / 视频：`grok-imagine-image`、`grok-imagine-image-lite`、`grok-imagine-image-pro`、`grok-imagine-image-edit`、`grok-imagine-video`
+
+<Callout type="info" title="画图 / 视频请走音视频模型分组">
+`grok-imagine-image / image-lite / image-pro / image-edit / video` 系列已统一归到 **音视频模型** 分组，按 `x1` 全额计费，避免 `x0.005` 的 Grok 倍率与按次计费的成本错位。
+</Callout>
 
 </Tab>
 </Tabs>
