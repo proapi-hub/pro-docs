@@ -5,6 +5,7 @@ import { appName, gitConfig } from './shared';
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
+      url: 'https://newapi.prorisehub.com/',
       title: (
         <span className="flex items-center gap-2 font-semibold">
           <Image
