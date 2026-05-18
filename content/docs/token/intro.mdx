@@ -94,12 +94,11 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 | `Codex-Plus` | **x0.08** | x0.056 | x0.04 | Codex 官方 Team / Plus 中转 | ✅ 支持 |
 | `Ant-Claude` | **x0.4** | x0.28 | x0.20 | 反重力官方 Claude 中转 | ✅ 支持 |
 | `Kiro-Claude-高缓存` | **x0.3** | x0.21 | x0.15 | Kiro 高缓存渠道中转 | ✅ 支持 |
-| `claude-max` | **x0.6** | x0.42 | x0.30 | AWS External Anthropic 官方直通 | ✅ 支持 |
-| `Claude-Windsurf` | **x0.25** | x0.175 | x0.125 | Windsurf 逆向 Claude 分组 | ✅ 支持 |
+| `claude-max` | **x0.6** | x0.42 | x0.30 | AWS External Anthropic 官方直通；账号容量可能波动 | ✅ 支持 |
+| `Windsurf` | **x0.25** | x0.175 | x0.125 | Windsurf 逆向渠道（含 Claude / GPT 模型） | ✅ 支持 |
 | `Ant-Gemini` | **x0.5** | x0.35 | x0.25 | 反重力官方 Gemini 中转 | ✅ 支持 |
 | `Grok` | **x0.005** | x0.0035 | x0.0025 | Grok 官方渠道中转 | ✅ 支持 |
 | `音视频模型` | **x1** | x0.7 | x0.5 | 音视频模型渠道聚合分组 | ✅ 支持 |
-| `统一分组` | **x1** | x0.7 | x0.5 | 站内全模型聚合分组 | ✅ 支持 |
 
 <Callout type="info">
 所有分组**均允许接入第三方工具**（Cline、OpenCode、各类逆向客户端等），可放心使用。
@@ -112,8 +111,8 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 按模型家族查看各分组的来源、倍率、适用场景与模型列表：
 
 <Cards>
-  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / Claude-Windsurf" />
+  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / claude-max / Windsurf" />
   <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus" />
   <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok" />
-  <Card title="音视频与统一分组" href="/token/media-unified" description="音视频模型 / 统一分组" />
+  <Card title="音视频模型分组" href="/token/media-unified" description="音视频模型（画图 / 视频 / 音频）" />
 </Cards>

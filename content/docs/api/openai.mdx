@@ -126,7 +126,7 @@ OpenAI SDK 会自动处理这个协议，你只需要 `stream=True`。
 
 | 上游 | 推荐分组 | 注意点 |
 | --- | --- | --- |
-| Claude | `Ant-Claude` / `Kiro-Claude-高缓存` / `Claude-Windsurf` | 使用 OpenAI schema 时 `tool_use` 会被翻译；如要原生工具调用建议用 [`/v1/messages`](/api/anthropic) |
+| Claude | `Ant-Claude` / `Kiro-Claude-高缓存` / `claude-max` / `Windsurf` | 使用 OpenAI schema 时 `tool_use` 会被翻译；如要原生工具调用建议用 [`/v1/messages`](/api/anthropic) |
 | GPT / Codex | `Codex-Pro` / `Codex-Plus` | 推理类模型（如 `gpt-5.1-high`）通过 `reasoning_effort` 控制 |
 | Gemini | `Ant-Gemini` | 大部分场景兼容，但 `safety_settings` / `system_instruction` 等原生字段不可用，需走 [Gemini 端点](/api/gemini) |
 | Grok | `Grok` | 完全兼容 OpenAI 协议 |

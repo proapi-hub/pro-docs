@@ -1,6 +1,6 @@
 ---
 title: "Claude 系列分组"
-description: "Ant-Claude、Kiro-Claude-高缓存、claude-max、Claude-Windsurf 四个 Claude 分组的来源、倍率与适用场景"
+description: "Ant-Claude、Kiro-Claude-高缓存、claude-max、Windsurf 四个 Claude 分组的来源、倍率与适用场景"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -12,12 +12,12 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 <Callout type="info" title="怎么选">
 - 追求**官方纯血稳定**：选 `claude-max`（AWS External Anthropic 官方直通，质量与稳定性最高）
-- 追求**性价比**：选 `Kiro-Claude-高缓存` 或 `Claude-Windsurf`
+- 追求**性价比**：选 `Kiro-Claude-高缓存` 或 `Windsurf`
 - 各分组模型列表为编写时快照，最终以 **模型广场** 实时列表为准。
 - 所有分组对 VIP 用户额外 **7 折**、Premium 用户额外 **5 折**，详见 [令牌与分组首页](/token/intro)。
 </Callout>
 
-<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'claude-max', 'Claude-Windsurf']}>
+<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'claude-max', 'Windsurf']}>
 <Tab value="Ant-Claude">
 
 - **分组介绍：**
@@ -102,11 +102,15 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 本分组走 AWS 官方付费 API，成本高于逆向渠道，因此倍率 `x0.6` 略高于 `Ant-Claude` 的 `x0.4`。**追求稳定与合规选 `claude-max`，追求性价比选 `Ant-Claude`**。
 </Callout>
 
+<Callout type="warn" title="账号容量与并发提示">
+本分组当前由多个 AWS External Anthropic 工作区组成的号池负载均衡，**单工作区按 Anthropic Tier 限额计费**（Sonnet 系列默认 30K tokens/min、Haiku 50K tokens/min），高并发或长上下文调用可能短暂触发 429。号池规模会**根据使用量随时扩容**，请以模型广场实时状态与控制台仪表盘为准；遇到持续不可用可临时切换到 `Ant-Claude` 或 `Kiro-Claude-高缓存`。
+</Callout>
+
 </Tab>
-<Tab value="Claude-Windsurf">
+<Tab value="Windsurf">
 
 - **分组介绍：**
-  - 逆向 Windsurf 得到的 Claude 分组，是 Claude 系列中 **倍率最低** 的一档，但由于 windsurf 的技术限制，windsurf 模型在长期工作中不如其他渠道，不适合作为编程 agent 模型，适合接入自己的服务作为任务模型
+  - 逆向 Windsurf 得到的混合渠道分组（含 Claude / GPT 模型），是站内 **倍率最低** 的 Claude 系列分组之一。由于 windsurf 的技术限制，模型在长期工作中表现不如官方渠道，**不适合作为编程 agent 主力**，适合接入自有服务作为任务模型或备用渠道。
   
 - **计费倍率：** `x0.25`（VIP `x0.175` · Premium `x0.125`）
 
