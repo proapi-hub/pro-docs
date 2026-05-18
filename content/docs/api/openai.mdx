@@ -218,7 +218,7 @@ curl https://newapi.prorisehub.com/v1/models \
 </Accordion>
 <Accordion title="Q2：返回的 model 字段不是我传的名字？">
 
-音视频分组会做参数映射（如 `nano-banana` → `firefly-nano-banana-2k-16x9`），返回的是实际后端模型名，**不影响计费**。详见 [音视频模型章节](/api/media)。
+部分分组（如 **音视频模型**）在网关侧做内部规范化处理，响应中的 `model` 可能与请求体中的 `model` 不完全一致，但 **计费始终按请求体中的 `model` 字段执行**。详见 [音视频生成 API](/api/media)。
 
 </Accordion>
 <Accordion title="Q3：是不是必须用 OpenAI 官方 SDK？">
