@@ -32,3 +32,7 @@ next-env.d.ts
 # editor / scratch
 batch-scrape-*.md
 *.zip
+
+# local experiments / nested next副本（防止误入库）
+/pro-docs/
+/garden-gpt-image-2/

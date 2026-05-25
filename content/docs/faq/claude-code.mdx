@@ -382,7 +382,7 @@ x-anthropic-billing-header: cc_version=2.1.xx.abc; cc_entrypoint=claude-code; cc
 | 指标 | 关闭前 | 关闭后 |
 | --- | --- | --- |
 | Cache Read tokens | 512 | 68,096 |
-| 单次费用 | $0.204 | $0.021 |
+| 单次费用 | 1× 基准 | **约 0.1×（降 90%）** |
 | API 首包延迟 | ~17s | ~2s |
 
 **有什么副作用？** 没有。这个字段只是 Anthropic 用于内部归因统计的标签，关闭后不影响任何功能、模型行为或响应质量，对接 ProAPI 时纯收益。

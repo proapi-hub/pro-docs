@@ -20,12 +20,20 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## 计费倍率怎么算
 
+![image-20260525135714499](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260525135714499.png)
+
 每个分组名后面会显示一个类似 `x0.3` 的数字，这就是该分组的**计费倍率**：
 
-所有的模型倍率严格对齐官方定价，越贵的模型即使越便宜的分组也同样会消耗较高余额
+所有的模型倍率严格对齐官方定价
+注意一点！
+
+**越贵的模型即使越便宜的分组也同样会消耗较高余额**
+
+**越便宜的模型即使分组看起来较贵但实际上耗的余额并不会很高**
+
 - 倍率 **< 1** 享折扣：`0.3` 倍 = 三折，`0.08` 倍 = 0.8 折
 - 倍率 **= 1** 原价：按模型标准价计费
-- 倍率 **> 1** 需加价：`1.5` 倍 = 额外支付 50% 费用
+- 倍率 **> 1** 需加价：`1.5` 倍 = 额外支付 50% 费用，这类大于一的渠道并不代表 **比官方贵** 平台是 1¥ = 1💲 除非倍率大于7 否则都会比官方大部分情况下便宜
 - 不选择分组则使用你的默认计费倍率（`1x`）
 
 > 同一个模型在不同分组下的价格可能相差几十倍，**选分组前务必看清倍率**。
@@ -34,25 +42,37 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## 用户等级折扣（VIP / Premium）
 
-普通用户按分组的**默认倍率**计费。账号被升级到 **VIP** 或 **Premium** 后，所有分组的倍率会按**统一比例**再次打折叠加，无需切换分组。
+普通用户按分组的**默认倍率** 计费。账号被升级到 **VIP** 或 **Premium** 后，可在大多数分组上享受额外折扣（普遍 **VIP ×0.7 / Premium ×0.5**），无需切换分组。
 
-| 用户等级 | 折扣比例 | 实际计费倍率 |
+| 用户等级 | 通用规则 | 实际计费倍率 |
 | --- | --- | --- |
 | **默认（default）** | 不打折 | 分组默认倍率 |
-| **VIP** | **额外 7 折** | 分组默认倍率 × 0.7 |
-| **Premium** | **额外 5 折** | 分组默认倍率 × 0.5 |
+| **VIP** | 额外 **7 折**（部分分组例外） | 见下方"分组总览"VIP 列 |
+| **Premium** | 额外 **5 折**（部分分组例外） | 见下方"分组总览"Premium 列 |
+
+<Callout type="warn" title="重要：折扣并非全分组统一">
+以下分组**有特殊折扣规则**，请直接以"分组总览"表格中的真实倍率为准：
+
+- `Ant-Claude`：VIP / Premium 均为 **×0.4**（不打折，与默认同价）。原因：反重力 Claude 上游成本较高，所有等级统一价。
+- `音视频模型`：VIP / Premium 均为 **×1**（不打折，与默认同价）。原因：音视频生成模型上游成本较高且按次计费。
+- `claude-max-满血`：默认 **×1.2**、VIP **×1.0**、Premium **×0.95**（非 ×0.7 / ×0.5）。
+- `claude-max-特价-满血`：默认 **×0.7**、VIP **×0.6**、Premium **×0.5**（非 ×0.7 / ×0.5 叠乘）。
+- `Codex-Plus-Pro 混池`：默认 **×0.12**、VIP **×0.09**、Premium **×0.08**（折扣略小于通用规则）。
+
+其余分组（Codex-Pro / Kiro-Claude-高缓存 / claude-reverse-高缓存 / Windsurf / Ant-Gemini / Grok）严格遵守 **VIP ×0.7 / Premium ×0.5** 规则。
+</Callout>
 
 <Callout type="info" title="举例">
-`Ant-Gemini` 分组默认倍率 `x0.5`：
+`Ant-Gemini` 分组默认倍率 `x0.5`（适用通用规则）：
 - 默认用户 = `x0.5`
 - VIP 用户 = `0.5 × 0.7 = x0.35`
 - Premium 用户 = `0.5 × 0.5 = x0.25`
 
-下方"分组总览"表格中**第 3、4 列**已经为你算好了 VIP/Premium 的最终倍率，可直接查阅。
+下方"分组总览"表格中**第 3、4 列**已经为你算好了 VIP/Premium 的最终倍率（含所有例外），可直接查阅。
 </Callout>
 
 <Callout type="warn" title="如何升级到 VIP / Premium">
-账号等级升级一般跟随充值额度或长期消费记录自动评定，也可联系站长（控制台 → 关于）申请。等级变动后**新发起的请求**立即按新倍率计费，老的进行中请求维持原状。
+账号等级升级一般跟随充值额度或长期消费记录自动评定，也可联系站长申请。等级变动后 **新发起的请求** 立即按新倍率计费，老的进行中请求维持原状。
 </Callout>
 
 ***
@@ -88,20 +108,30 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## 分组总览
 
-| 分组 | 默认倍率 | VIP（×0.7） | Premium（×0.5） | 主要用途 | 第三方接入 |
-| --- | --- | --- | --- | --- | --- |
-| `Codex-Pro` | **x0.3** | x0.21 | x0.15 | Codex 官方纯血 Pro 中转 | ✅ 支持 |
-| `Codex-Plus` | **x0.08** | x0.056 | x0.04 | Codex 官方 Team / Plus 中转 | ✅ 支持 |
-| `Ant-Claude` | **x0.4** | x0.28 | x0.20 | 反重力官方 Claude 中转 | ✅ 支持 |
-| `Kiro-Claude-高缓存` | **x0.3** | x0.21 | x0.15 | Kiro 高缓存渠道中转 | ✅ 支持 |
-| `claude-max` | **x0.6** | x0.42 | x0.30 | AWS External Anthropic 官方直通；账号容量可能波动 | ✅ 支持 |
-| `Windsurf` | **x0.25** | x0.175 | x0.125 | Windsurf 逆向渠道（含 Claude / GPT 模型） | ✅ 支持 |
-| `Ant-Gemini` | **x0.5** | x0.35 | x0.25 | 反重力官方 Gemini 中转 | ✅ 支持 |
-| `Grok` | **x0.005** | x0.0035 | x0.0025 | Grok 官方渠道中转 | ✅ 支持 |
-| `音视频模型` | **x1** | x0.7 | x0.5 | 音视频模型渠道聚合分组 | ✅ 支持 |
+| 分组 | 默认倍率 | VIP | Premium | 稳定性 | 主要用途 | 第三方接入 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `Codex-Pro` | **x0.3** | x0.21 | x0.15 | ⭐⭐⭐⭐⭐ | Codex 官方纯血 Pro 中转 | ✅ 支持 |
+| `Codex-Plus-Pro 混池` | **x0.12** | x0.09 | x0.08 | ⭐⭐⭐⭐⭐ | Codex 官方 Pro + Plus 混池 | ✅ 支持 |
+| `Ant-Claude` | **x0.4** | x0.4 ⚠ | x0.4 ⚠ | ⭐⭐⭐ | 反重力官方 Claude 中转（VIP/Premium 不打折） | ✅ 支持 |
+| `Kiro-Claude-高缓存` | **x0.3** | x0.21 | x0.15 | ⭐⭐⭐⭐ | Kiro 高缓存渠道中转 | ✅ 支持 |
+| `claude-reverse-高缓存` | **x0.2** | x0.14 | x0.10 | ⭐⭐ | 逆向高缓存渠道，非自建号池可能不稳定 | ✅ 支持 |
+| `claude-max-满血` | **x1.2** | x1.0 | x0.95 | ⭐⭐⭐⭐⭐ | 官方满血 20x 渠道（拦截 cctest 测试流量防封） | ✅ 支持 |
+| `claude-max-特价-满血` | **x0.7** | x0.6 | x0.5 | ⭐⭐⭐ | 官方特价 20x 渠道（日 1 万美刀额度，跑完即止） | ✅ 支持 |
+| `Windsurf` | **x0.25** | x0.175 | x0.125 | ⭐ | Windsurf 逆向渠道（含 Claude / GPT 模型） | ✅ 支持 |
+| `Ant-Gemini` | **x0.5** | x0.35 | x0.25 | ⭐⭐⭐ | 反重力官方 Gemini 中转 | ✅ 支持 |
+| `Grok` | **x0.005** | x0.0035 | x0.0025 | ⭐⭐⭐ | Grok 官方渠道中转 | ✅ 支持 |
+| `音视频模型` | **x1** | x1 ⚠ | x1 ⚠ | ⭐⭐⭐ | 图像 / 视频生成模型聚合分组（VIP/Premium 不打折） | ✅ 支持 |
 
 <Callout type="info">
 所有分组**均允许接入第三方工具**（Cline、OpenCode、各类逆向客户端等），可放心使用。
+</Callout>
+
+<Callout type="warn" title="2026-05-25 大版本更新">
+- **下线** `Codex-Plus`（×0.08），新分组 `Codex-Plus-Pro 混池`（×0.12）替代，号池由 Codex 官方 Pro + Plus 混合组成，稳定性更高。
+- **拆分** `claude-max`（×0.6）→ `claude-max-满血`（×1.2，满血 20x 防封）+ `claude-max-特价-满血`（×0.7，特价 20x 限量）。
+- **新增** `claude-reverse-高缓存`（×0.2），逆向高缓存 Claude 渠道，倍率更低但稳定性偏弱。
+
+如果你的令牌仍在使用 `Codex-Plus` 或 `claude-max`，请前往控制台 → 令牌管理 → 编辑令牌，切换至新分组。
 </Callout>
 
 ***
@@ -111,8 +141,8 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 按模型家族查看各分组的来源、倍率、适用场景与模型列表：
 
 <Cards>
-  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / claude-max / Windsurf" />
-  <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus" />
+  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / claude-max-满血 / claude-max-特价-满血 / Windsurf" />
+  <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus-Pro 混池" />
   <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok" />
   <Card title="音视频模型分组" href="/token/media-unified" description="音视频模型（画图 / 视频 / 音频）" />
 </Cards>

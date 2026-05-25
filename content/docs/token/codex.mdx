@@ -1,6 +1,6 @@
 ---
 title: "GPT / Codex 系列分组"
-description: "Codex-Pro、Codex-Plus 两个 GPT 分组的来源、倍率与适用场景"
+description: "Codex-Pro、Codex-Plus-Pro 混池两个 GPT 分组的来源、倍率与适用场景"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -8,15 +8,19 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## GPT / Codex 系列分组
 
-两个 GPT 分组都面向 Codex CLI，区别在于号池来源与倍率。
+两个 GPT 分组都面向 Codex CLI，区别在于号池来源与倍率。两者均为 Codex 官方渠道，稳定性都为站内最高档。
 
 <Callout type="info" title="怎么选">
-- 追求**质量与稳定**：选 `Codex-Pro`
-- 追求**性价比**（日常编程首选）：选 `Codex-Plus`
+- 追求**纯血 Pro 质量**：选 `Codex-Pro`（仅 Pro 账号池）
+- 追求**性价比**（日常编程首选）：选 `Codex-Plus-Pro 混池`（Pro + Plus 混池，价格更低）
 - 各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
 </Callout>
 
-<Tabs items={['Codex-Pro', 'Codex-Plus']}>
+<Callout type="warn" title="2026-05-25 分组调整">
+原 `Codex-Plus`（×0.08）已下线，新分组 `Codex-Plus-Pro 混池`（×0.12）替代——号池由 Codex 官方 Pro + Plus 混合组成，稳定性更高。如果你的令牌仍指向 `Codex-Plus`，请前往控制台编辑令牌切换分组。
+</Callout>
+
+<Tabs items={['Codex-Pro', 'Codex-Plus-Pro 混池']}>
 <Tab value="Codex-Pro">
 
 - **分组介绍：**
@@ -24,6 +28,8 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - Codex 官方**纯血 Pro 账号**中转，来源于 OpenAI 官方 Pro 订阅账号，是 GPT-5 系列中质量与稳定性最高的一档。
 
 - **计费倍率：** `x0.3`（VIP `x0.21` · Premium `x0.15`）
+
+- **稳定性：** ⭐⭐⭐⭐⭐（站内最稳定档）
 
 - **适用 CLI / 工具：**
 
@@ -41,13 +47,16 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - `gpt-5.4-mini`
 
 </Tab>
-<Tab value="Codex-Plus">
+<Tab value="Codex-Plus-Pro 混池">
 
 - **分组介绍：**
 
-  - Codex 官方 **Team 和 Plus 账号**组成的号池，倍率极低（`x0.08`），是**性价比首选**。日常编程任务推荐使用此分组。
+  - Codex 官方 **Pro + Plus 账号混池**，倍率较纯血 Pro 更低（`x0.12`），是日常编程任务的**性价比首选**。
+  - Pro / Plus 账号自动按比例混合调度，整体稳定性接近 Pro，价格接近 Plus。
 
-- **计费倍率：** `x0.08`（VIP `x0.056` · Premium `x0.04`）
+- **计费倍率：** `x0.12`（VIP `x0.09` · Premium `x0.08`）
+
+- **稳定性：** ⭐⭐⭐⭐⭐（站内最稳定档）
 
 - **适用 CLI / 工具：**
 
@@ -67,6 +76,10 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - `gpt-5.3-codex-spark`
   - `gpt-5.2`
   - `gpt-image-2`
+
+<Callout type="info" title="VIP / Premium 折扣略小于通用规则">
+本分组 VIP 倍率为 ×0.09（约 ×0.75，非通用 ×0.7），Premium 为 ×0.08（约 ×0.67，非通用 ×0.5）。原因：Pro + Plus 混池上游成本较低，平台已在默认倍率上提供较大折扣。
+</Callout>
 
 </Tab>
 </Tabs>

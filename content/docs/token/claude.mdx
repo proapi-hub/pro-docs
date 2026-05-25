@@ -1,6 +1,6 @@
 ---
 title: "Claude 系列分组"
-description: "Ant-Claude、Kiro-Claude-高缓存、claude-max、Windsurf 四个 Claude 分组的来源、倍率与适用场景"
+description: "Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / claude-max-满血 / claude-max-特价-满血 / Windsurf 六个 Claude 分组的来源、倍率与适用场景"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -8,27 +8,97 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Claude 系列分组
 
-四个 Claude 分组来源不同、价格不同，按需选择。同为 Claude 模型，可直接用于 Claude Code，也可接入第三方工具。
+六个 Claude 分组来源、价格、稳定性各不相同，按需选择。所有分组的 Claude 模型均可直接用于 Claude Code，也可接入第三方工具。
 
 <Callout type="info" title="怎么选">
-- 追求**官方纯血稳定**：选 `claude-max`（AWS External Anthropic 官方直通，质量与稳定性最高）
-- 追求**性价比**：选 `Kiro-Claude-高缓存` 或 `Windsurf`
-- 各分组模型列表为编写时快照，最终以 **模型广场** 实时列表为准。
-- 所有分组对 VIP 用户额外 **7 折**、Premium 用户额外 **5 折**，详见 [令牌与分组首页](/token/intro)。
+- 追求**官方纯血、最高稳定**：选 `claude-max-满血`（AWS External Anthropic 官方 20x 渠道，倍率 ×1.2 但拦截 cctest 防封）
+- 追求**官方质量 + 性价比**：选 `claude-max-特价-满血`（官方 20x 特价档，日 1 万美刀额度，跑完即止）
+- 追求**通用稳定 + 经济**：选 `Ant-Claude` 或 `Kiro-Claude-高缓存`
+- 追求**极致低价**：选 `claude-reverse-高缓存`（×0.2）或 `Windsurf`（×0.25），但稳定性偏弱
+- 各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
+- 大部分分组对 VIP 额外 **7 折**、Premium 额外 **5 折**；但 `Ant-Claude` 全等级 ×0.4 不打折，`claude-max-*` 系列折扣规则特殊，详见 [令牌与分组首页](/token/intro)。
 </Callout>
 
-<Tabs items={['Ant-Claude', 'Kiro-Claude-高缓存', 'claude-max', 'Windsurf']}>
+<Tabs items={['claude-max-满血', 'claude-max-特价-满血', 'Ant-Claude', 'Kiro-Claude-高缓存', 'claude-reverse-高缓存', 'Windsurf']}>
+<Tab value="claude-max-满血">
+
+- **分组介绍：**
+
+  - **AWS External Anthropic 官方满血 20x 渠道**，由 Anthropic 官方在 AWS 上提供的 Claude Messages API 直连入口。**质量、稳定性、上下文 / 缓存表现均与 Anthropic 官方一致**，是站内 Claude 系列中**稳定性最高**的渠道，适合对稳定性和合规性敏感的生产环境。
+  - **拦截 cctest 测试流量防封**：自动过滤异常测试流量，避免触发 Anthropic 风控导致工作区被封。
+  - 鉴权方式为 AWS 官方下发的长期 API Key + 工作区（workspace）隔离。
+
+- **计费倍率：** `x1.2`（VIP `x1.0` · Premium `x0.95`）
+
+- **稳定性：** ⭐⭐⭐⭐⭐（站内最稳定）
+
+- **适用 CLI / 工具：**
+
+  - Claude Code（推荐，最稳定）
+  - Cline / Cursor / 任意支持 Anthropic Messages API 的客户端
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - `claude-opus-4-7`、`claude-opus-4-6`、`claude-opus-4-5-20251101`
+  - `claude-sonnet-4-6`、`claude-sonnet-4-5-20250929`
+  - `claude-haiku-4-5-20251001`
+
+<Callout type="warn" title="为什么倍率高于其他分组">
+本分组走 AWS 官方付费 API（20x 满血档），成本最高，因此倍率 `x1.2` 略高于普通分组。**追求极致稳定与合规优先选本分组**；若希望成本更低，可考虑 `claude-max-特价-满血` 或逆向分组。
+</Callout>
+
+<Callout type="info" title="账号容量与并发提示">
+本分组当前由多个 AWS External Anthropic 工作区组成的号池负载均衡，**单工作区按 Anthropic Tier 限额计费**（Sonnet 系列默认 30K tokens/min、Haiku 50K tokens/min），高并发或长上下文调用可能短暂触发 429。号池规模会**根据使用量随时扩容**，请以模型广场实时状态与控制台仪表盘为准。
+</Callout>
+
+</Tab>
+<Tab value="claude-max-特价-满血">
+
+- **分组介绍：**
+
+  - **AWS External Anthropic 官方特价 20x 渠道**，与满血版同源但配额受限，**每日约 1 万美元额度，跑完即止**。质量与 `claude-max-满血` 一致，价格更低。
+  - 适合预算敏感但仍要求官方质量的场景，作为日常主力使用。
+
+- **计费倍率：** `x0.7`（VIP `x0.6` · Premium `x0.5`）
+
+- **稳定性：** ⭐⭐⭐（特价档每日跑完即止，下午 / 晚上可能进入额度耗尽状态）
+
+- **适用 CLI / 工具：**
+
+  - Claude Code
+  - Cline / Cursor / 任意支持 Anthropic Messages API 的客户端
+
+- **是否支持接入第三方：**
+
+  - ✅ 支持
+
+- **包含模型（编写时快照）：**
+
+  - 与 `claude-max-满血` 一致
+
+<Callout type="warn" title="额度提示">
+特价档每日额度有限（约 1 万美元 / 日），**用完后会暂时不可用**，请准备一个备用分组（推荐 `Ant-Claude` 或 `Kiro-Claude-高缓存`）应对额度耗尽场景。
+</Callout>
+
+</Tab>
 <Tab value="Ant-Claude">
 
 - **分组介绍：**
 
-  - 反重力官方 Claude 中转，逆向 Google Antigravity 得到的 Claude 模型渠道。提供 Opus / Sonnet / Haiku 全系列，是 Claude 分组中**综合稳定性最好**的一档，适合作为日常主力，但谷歌风控策略逐步严格，很大部分情况下请求偏慢，质量中等，约官方满血版的 80% 智力，在早上的时间点可能会出现空号的情况，不推荐
+  - 反重力官方 Claude 中转，逆向 Google Antigravity 得到的 Claude 模型渠道。提供 Opus / Sonnet / Haiku 全系列。
+  - 谷歌风控策略逐步严格，请求偏慢，质量约官方满血版的 80%；早上时段偶有空号情况。
 
-- **计费倍率：** `x0.4`（VIP `x0.28` · Premium `x0.20`）
+- **计费倍率：** `x0.4`（VIP `x0.4` · Premium `x0.4`，**全等级不打折**）
+
+- **稳定性：** ⭐⭐⭐
 
 - **适用 CLI / 工具：**
 
-  - Claude Code（推荐）
+  - Claude Code
   - Cline 等第三方工具
 
 - **是否支持接入第三方：**
@@ -42,6 +112,10 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - `claude-sonnet-4-6`
   - `claude-haiku-4-5-20251001`
 
+<Callout type="warn" title="VIP / Premium 不打折">
+本分组 VIP / Premium 等级**与默认用户同价**（统一 ×0.4），不享受其他分组通用的 7 折 / 5 折优惠。原因：反重力 Claude 上游成本较高，平台统一定价以保证渠道供给。
+</Callout>
+
 </Tab>
 <Tab value="Kiro-Claude-高缓存">
 
@@ -50,6 +124,8 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - 逆向 Kiro（AWS Q）得到的 Claude 模型渠道，**开启了高缓存策略**，价格相较 Ant-Claude 更低。上下文 200K ~ 1M，支持思考，适合日常使用、任务规划、翻译等场景。
 
 - **计费倍率：** `x0.3`（VIP `x0.21` · Premium `x0.15`）
+
+- **稳定性：** ⭐⭐⭐⭐
 
 - **适用 CLI / 工具：**
 
@@ -70,23 +146,25 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - `claude-haiku-4-5-20251001`
 
 <Callout type="warn" title="稳定性提示">
-此分组在 Claude Code 中使用时偶发 **422 错误**，稳定性略逊于 Ant-Claude。追求稳定优先选 Ant-Claude，追求性价比可选本分组。
+此分组在 Claude Code 中使用时偶发 **422 错误**，稳定性略逊于 `claude-max-*`。追求稳定优先选 `claude-max-满血`，追求性价比可选本分组。
 </Callout>
 
 </Tab>
-<Tab value="claude-max">
+<Tab value="claude-reverse-高缓存">
 
 - **分组介绍：**
 
-  - **AWS External Anthropic 官方直通**（`aws-external-anthropic.us-east-1.api.aws`），由 Anthropic 官方在 AWS 上提供的 Claude Messages API 直连入口。**质量、稳定性、上下文 / 缓存表现均与 Anthropic 官方一致**，是站内 Claude 系列中**唯一非逆向、非聚合**的渠道，适合对稳定性和合规性敏感的生产环境。
-  - 鉴权方式为 AWS 官方下发的长期 API Key + 工作区（workspace）隔离。
+  - 逆向 Claude 模型渠道（**非自建号池**），同样开启了高缓存策略，倍率较 Kiro 更低。
+  - 由于使用第三方号池，**稳定性偏弱**，更适合作为价格敏感的备用渠道。
 
-- **计费倍率：** `x0.6`（VIP `x0.42` · Premium `x0.30`）
+- **计费倍率：** `x0.2`（VIP `x0.14` · Premium `x0.10`）
+
+- **稳定性：** ⭐⭐（非自建号池，可能不稳定）
 
 - **适用 CLI / 工具：**
 
-  - Claude Code（推荐，最稳定）
-  - Cline / Cursor / 任意支持 Anthropic Messages API 的客户端
+  - Claude Code
+  - Cline 等第三方工具
 
 - **是否支持接入第三方：**
 
@@ -94,25 +172,21 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 - **包含模型（编写时快照）：**
 
-  - `claude-sonnet-4-5-20250929`（首发，已配置完整定价）
-  - `claude-opus-4-7`、`claude-opus-4-6`、`claude-opus-4-5-20251101`
-  - `claude-sonnet-4-6`、`claude-haiku-4-5-20251001`
+  - Claude 系列主流模型（具体以模型广场为准）
 
-<Callout type="info" title="为什么倍率比 Ant-Claude 高">
-本分组走 AWS 官方付费 API，成本高于逆向渠道，因此倍率 `x0.6` 略高于 `Ant-Claude` 的 `x0.4`。**追求稳定与合规选 `claude-max`，追求性价比选 `Ant-Claude`**。
-</Callout>
-
-<Callout type="warn" title="账号容量与并发提示">
-本分组当前由多个 AWS External Anthropic 工作区组成的号池负载均衡，**单工作区按 Anthropic Tier 限额计费**（Sonnet 系列默认 30K tokens/min、Haiku 50K tokens/min），高并发或长上下文调用可能短暂触发 429。号池规模会**根据使用量随时扩容**，请以模型广场实时状态与控制台仪表盘为准；遇到持续不可用可临时切换到 `Ant-Claude` 或 `Kiro-Claude-高缓存`。
+<Callout type="warn" title="稳定性提示">
+本分组依赖第三方号池，**可能间歇性不可用**。请将其作为低成本备用渠道，主力请使用 `Kiro-Claude-高缓存` 或 `claude-max-*` 系列。
 </Callout>
 
 </Tab>
 <Tab value="Windsurf">
 
 - **分组介绍：**
-  - 逆向 Windsurf 得到的混合渠道分组（含 Claude / GPT 模型），是站内 **倍率最低** 的 Claude 系列分组之一。由于 windsurf 的技术限制，模型在长期工作中表现不如官方渠道，**不适合作为编程 agent 主力**，适合接入自有服务作为任务模型或备用渠道。
-  
+  - 逆向 Windsurf 得到的混合渠道分组（含 Claude / GPT 模型），是站内 **倍率最低** 的 Claude 系列分组之一。由于 Windsurf 的技术限制，模型在长期工作中表现不如官方渠道，**不适合作为编程 agent 主力**，适合接入自有服务作为任务模型或备用渠道。
+
 - **计费倍率：** `x0.25`（VIP `x0.175` · Premium `x0.125`）
+
+- **稳定性：** ⭐
 
 - **适用 CLI / 工具：**
 
@@ -140,7 +214,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   - `claude-4.5-haiku`
 
 <Callout type="warn" title="可用性提示">
-此分组渠道会视上游情况临时上下架，**可能出现暂时不可用**。如调用失败，请改用 Ant-Claude 或 Kiro-Claude-高缓存，并以模型广场的实时状态为准。
+此分组渠道会视上游情况临时上下架，**可能出现暂时不可用**。如调用失败，请改用 `Ant-Claude` 或 `Kiro-Claude-高缓存`，并以模型广场的实时状态为准。
 </Callout>
 
 </Tab>
