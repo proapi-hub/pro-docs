@@ -1,6 +1,6 @@
 ---
 title: "令牌与分组"
-description: "从小白视角理解 ProAPI 分组、倍率、模型广场与当前可用渠道"
+description: "从小白视角理解 ProAPI 分组、倍率、模型广场与对外可用模型"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -22,18 +22,18 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## 当前分组总览
 
-以下数据来自当前站点的真实价格接口与后台渠道快照，更新时间：**2026-05-27**。
+以下数据来自当前站点的真实价格接口，更新时间：**2026-05-27**。
 
 | 分组 | 当前默认倍率 | 稳定性 | 适合做什么 | 新手建议 |
 | --- | --- | --- | --- | --- |
 | `default` | `x1` | 取决于具体模型 | 通用兜底分组，可见全站模型 | 不追求折扣时使用 |
-| `Codex-Pro` | `x0.3` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，纯 Pro 号池 | 追求稳定选它 |
-| `Codex-Plus-Pro 混池` | `x0.12` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，Pro + Plus 混池 | 日常编程首选 |
-| `claude-max-满血` | `x1.2` | ⭐⭐⭐⭐⭐ | Claude 官方满血 20x 渠道 | 生产环境和重要任务优先 |
-| `Ant-Claude` | `x0.4` | ⭐⭐⭐ | 反重力 Claude 渠道 | 普通 Claude 任务可用 |
-| `Kiro-Claude-高缓存` | `x0.2` | ⭐⭐⭐⭐ | Claude 高缓存渠道 | Claude Code 性价比首选 |
-| `claude-reverse-高缓存` | `x0.1` | ⭐⭐ | 低价 Claude 备用渠道 | 适合作备用，不建议单独依赖 |
-| `Windsurf` | `x0.25` | ⭐ | Claude / GPT / Gemini 混合逆向渠道 | 低价备用，稳定性较弱 |
+| `Codex-Pro` | `x0.3` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，稳定档 | 追求稳定选它 |
+| `Codex-Plus-Pro 混池` | `x0.12` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，性价比档 | 日常编程首选 |
+| `claude-max-满血` | `x1.2` | ⭐⭐⭐⭐⭐ | Claude 高稳定线路 | 生产环境和重要任务优先 |
+| `Ant-Claude` | `x0.4` | ⭐⭐⭐ | Claude 通用线路 | 普通 Claude 任务可用 |
+| `Kiro-Claude-高缓存` | `x0.2` | ⭐⭐⭐⭐ | Claude 高缓存线路 | Claude Code 性价比首选 |
+| `claude-reverse-高缓存` | `x0.1` | ⭐⭐ | Claude 低价备用线路 | 适合作备用，不建议单独依赖 |
+| `Windsurf` | `x0.25` | ⭐ | Claude / GPT / Gemini 综合低价线路 | 低价备用，稳定性较弱 |
 | `Ant-Gemini` | `x0.5` | ⭐⭐⭐ | Gemini CLI 与 Gemini API | Gemini 用户选它 |
 | `Grok` | `x0.1` | ⭐⭐⭐ | Grok 对话、推理、搜索类模型 | Grok 用户选它 |
 | `音视频模型` | `x1` | ⭐⭐⭐ | 图片、视频生成模型 | 画图/视频必须选它 |
@@ -64,7 +64,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 ## 如何查看最新模型
 
-站点里的模型和渠道会随上游情况调整，**控制台的“模型广场”永远优先于文档快照**。
+站点里的可用模型会随上游情况调整，**控制台的“模型广场”永远优先于文档快照**。
 
 1. 登录控制台。
 2. 点击右上角 **模型广场**。
@@ -75,20 +75,9 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 很多调用失败不是代码问题，而是令牌分组没有这个模型。调用前先看模型广场，可以少走很多弯路。
 </Callout>
 
-## 目前有哪些真实渠道
-
-当前后台共有 **24 条渠道**：
-
-- **18 条启用**：正常参与路由。
-- **6 条禁用**：保留配置，但不会参与正常调用。
-- 分组覆盖：Codex、Claude、Gemini、Grok、音视频模型、Windsurf 与 default。
-
-想看每条渠道对应哪个分组、有哪些模型，请阅读 [当前渠道总览](/token/channels)。
-
 ## 分组详情
 
 <Cards>
-  <Card title="当前渠道总览" href="/token/channels" description="按真实后台渠道整理：启用状态、分组、主要模型和用途。" />
   <Card title="Claude 系列分组" href="/token/claude" description="claude-max-满血 / Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / Windsurf" />
   <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus-Pro 混池" />
   <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok 当前模型与倍率。" />

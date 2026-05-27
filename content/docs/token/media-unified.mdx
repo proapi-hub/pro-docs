@@ -1,6 +1,6 @@
 ---
 title: "音视频模型分组"
-description: "音视频模型分组的当前模型、渠道和使用建议"
+description: "音视频模型分组的可用模型与使用建议"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -18,16 +18,6 @@ import { Callout } from 'fumadocs-ui/components/callout';
 <Callout type="warn" title="不要用 Codex 或 Claude 令牌调画图视频">
 图片和视频模型需要 `音视频模型` 分组令牌。用 Codex、Claude、Gemini 分组令牌调用，常见结果是“模型不存在”。
 </Callout>
-
-## 当前启用渠道
-
-| 渠道 | 主要模型 | 说明 |
-| --- | --- | --- |
-| `Adobe Firefly 聚合` | `nano-banana`、`gpt-image-2`、`sora-2`、`veo-3.1`、`kling-3.0`、`kling-o3` | 图片与视频聚合线路 |
-| `OpenArt Image 聚合` | `flux-2-*`、`qwen-image-*`、`wan2-7-image*`、`byte-plus-seedream-*`、`google-imagen-4` | 图片生成聚合线路 |
-| `ChatGPT2API 自营` | `gpt-image-2` | GPT Image 自营线路 |
-| `Ant-nano-banana-pro (cpa)` | `nano-banana-pro` | Nano Banana Pro 线路 |
-| `seed2 逆向渠` | `seedance2.0-5s`、`seedance2.0-10s`、`seedance1.5-*`、`kling-5s`、`kling-10s` | 固定时长视频线路 |
 
 ## 当前模型清单
 
