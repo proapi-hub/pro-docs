@@ -1,246 +1,98 @@
 ---
 title: "音视频生成 API"
-description: "ProAPI 音视频模型分组的端点、参数、模型清单、定价与调用示例"
+description: "图片和视频模型的当前端点、模型清单、参数和调用示例"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import { CpuIcon, BookOpenIcon, PaletteIcon } from 'lucide-react';
 
-ProAPI 音视频分组对外暴露统一、稳定的模型名（如 `nano-banana`、`sora-2`），由 ProAPI 网关根据请求中的 `quality` / `aspect_ratio` / `duration` 等参数，自动选择最匹配的后端实现。客户端**只需关心模型名 + 业务参数**，无需关心上游具体型号、版本号或分辨率档位。
+## 先看这张表
 
-<Callout type="info" title="抽象层稳定承诺">
-本章列出的模型名与参数语义即 ProAPI 对外契约。上游号池、分辨率档位等实现细节由网关接管，可能随时调整、聚合或下线，**不影响你的客户端代码**。计费严格按你请求中的 `model` 字段固定，不会因后端切换型号而变价。
+| 你要做什么 | 推荐接口 | 令牌分组 |
+| --- | --- | --- |
+| 文生图 | `POST /v1/images/generations` | `音视频模型` |
+| 图生图 / 图片编辑 | `POST /v1/images/edits` | `音视频模型` |
+| 视频生成 | `POST /v1/videos` | `音视频模型` |
+| 查询视频进度 | `GET /v1/videos/{video_id}` | `音视频模型` |
+| 下载视频文件 | `GET /v1/videos/{video_id}/content` | `音视频模型` |
+
+<Callout type="warn" title="新手最常见错误">
+图片和视频模型必须使用 `音视频模型` 分组令牌。不要用 Codex、Claude、Gemini 分组令牌调用这些模型。
 </Callout>
 
-## 端点
+## 当前模型清单
 
-| 用途 | 推荐端点 | 备选 |
+以下来自当前线上价格接口，更新时间：**2026-05-27**。最终价格与可用性仍以模型广场为准。
+
+### 图片模型
+
+| 模型 | 说明 | 参考单次消耗 |
 | --- | --- | --- |
-| 图像（文生图） | `POST /v1/images/generations` | `POST /v1/chat/completions` |
-| 图像（图生图 / 编辑） | `POST /v1/images/edits` | – |
-| 视频（文 / 图生视频） | `POST /v1/chat/completions` | – |
-
-所有请求使用 **音视频模型** 分组令牌：
-
-```
-Authorization: Bearer sk-<你的音视频分组令牌>
-Content-Type: application/json
-```
-
-域名固定为 `https://newapi.prorisehub.com`。详细鉴权规则见 [OpenAI 兼容端点](/api/openai)。
-
-## 模型清单
-
-### 图像模型
-
-| 模型 | 类型 | 厂商 | 推荐用途 |
-| --- | --- | --- | --- |
-| `nano-banana` | 文生图 | Google | 通用日常出图，性价比首选 |
-| `nano-banana-2` | 文生图 | Google | 通用日常出图，支持更多极端比例 |
-| `nano-banana-pro` | 文生图 | Google | 通用高质量出图 |
-| `gpt-image-2` | 文生图 | OpenAI | OpenAI 风格出图，适配 GPT 协议 |
-| `google-imagen-4` | 文生图 | Google | 文字渲染与画质优秀 |
-| `flux-2-pro` | 文生图 | Black Forest Labs | Flux 2 专业版 |
-| `flux-2-max` | 文生图 | Black Forest Labs | Flux 2 旗舰版，画质细节出色 |
-| `byte-plus-seedream-4` | 文生图 / 图生图 | 字节跳动 | Seedream 4 通用版 |
-| `byte-plus-seedream-4-5` | 文生图 / 图生图 | 字节跳动 | Seedream 4.5 增强版 |
-| `byte-plus-seedream-5-lite` | 文生图 / 图生图 | 字节跳动 | Seedream 5 轻量档 |
-| `qwen-image-2` | 文生图 / 图生图 | 阿里通义 | Qwen Image 2 通用版 |
-| `qwen-image-2-pro` | 文生图 / 图生图 | 阿里通义 | Qwen Image 2 高质量版 |
-| `qwen-image-plus` | 文生图 | 阿里通义 | Qwen Image 增强版 |
-| `wan2-7-image` | 文生图 / 图生图 | 阿里通义万相 | Wan 2.7 通用版 |
-| `wan2-7-image-pro` | 文生图 / 图生图 | 阿里通义万相 | Wan 2.7 高质量版 |
-| `grok-imagine` | 文生图 | xAI | Grok Imagine 图像版 |
-| `grok-imagine-image` | 文生图 | xAI | Grok 文生图 |
-| `grok-imagine-image-lite` | 文生图 | xAI | Grok 轻量档 |
-| `grok-imagine-image-pro` | 文生图 | xAI | Grok 高质量档 |
-| `grok-imagine-image-edit` | 图生图 | xAI | Grok 图像编辑 |
+| `nano-banana` | Google 图像生成/编辑 | `0.04` |
+| `nano-banana-2` | Google 图像生成/编辑，支持更多比例 | `0.16` |
+| `nano-banana-pro` | Google 高质量图像生成/编辑 | `0.12` |
+| `gpt-image-2` | OpenAI 图像生成 | `0.08` |
+| `flux-2-pro` | Flux 2 Pro | `0.08` |
+| `flux-2-max` | Flux 2 Max | `0.08` |
+| `google-imagen-4` | Google Imagen 4 | `0.08` |
+| `byte-plus-seedream-4` | 字节 Seedream 4 | `0.03` |
+| `byte-plus-seedream-4-5` | 字节 Seedream 4.5 | `0.03` |
+| `byte-plus-seedream-5-lite` | 字节 Seedream 5 Lite | `0.03` |
+| `qwen-image-2` | 通义 Qwen Image 2 | `0.03` |
+| `qwen-image-2-pro` | 通义 Qwen Image 2 Pro | `0.06` |
+| `qwen-image-plus` | 通义 Qwen Image Plus | `0.10` |
+| `wan2-7-image` | 通义万相 Wan 2.7 | `0.03` |
+| `wan2-7-image-pro` | 通义万相 Wan 2.7 Pro | `0.05` |
+| `grok-imagine` | xAI Grok 图像 | `0.05` |
 
 ### 视频模型
 
-| 模型 | 类型 | 默认时长 | 推荐用途 |
+| 模型 | 类型 | 建议参数 | 参考单次消耗 |
 | --- | --- | --- | --- |
-| `sora-2` | 文生视频 | 8s | 通用视频生成 |
-| `sora-2-pro` | 文生视频 | 8s | 高质量视频 |
-| `veo-3.1` | 文生视频 | 8s | 高质量、原生 1080p |
-| `veo-3.1-fast` | 文生视频 | 8s | 平衡画质与速度 |
-| `veo-3.1-ref` | 图生视频 | 8s | 需要参考图的视频 |
-| `kling-3.0` | **图生视频** | 10s | 必须传参考图，纯文本调用会失败 |
-| `kling-o3` | 文生视频 | 15s | 长视频，最长 15 秒 |
-| `grok-imagine-video` | 文生视频 | 6s | xAI Grok 视频生成 |
+| `seedance2.0-5s` | 文生/图生视频 | `seconds: 5` | `0.1` |
+| `seedance2.0-10s` | 文生/图生视频 | `seconds: 10` | `0.1` |
+| `seedance1.5-5s` | 文生/图生视频 | `seconds: 5` | `0.28` |
+| `seedance1.5-10s` | 文生/图生视频 | `seconds: 10` | `0.28` |
+| `kling-5s` | 可灵图生视频 | `seconds: 5`，建议带首帧图 | `0.3` |
+| `kling-10s` | 可灵图生视频 | `seconds: 10`，建议带首帧图 | `0.3` |
+| `kling-3.0` | 可灵视频 | `duration: 5/10/15` | `1.5` |
+| `kling-o3` | 可灵 O3 视频 | `duration: 5/15` | `1.5` |
+| `sora-2` | OpenAI 视频 | `duration: 4/8/12` | `1.8` |
+| `sora-2-pro` | OpenAI 高质量视频 | `duration: 4/8/12` | `5.4` |
+| `veo-3.1` | Google 视频 | `duration: 4/6/8` | `3` |
+| `veo-3.1-fast` | Google 快速视频 | `duration: 4/6/8` | `0.6` |
+| `veo-3.1-ref` | Google 参考图视频 | `duration: 4/6/8`，需要参考图 | `3` |
 
-<Callout type="warn" title="模型清单随号池变化">
-本章模型清单为编写时快照，**最新可用列表以模型广场为准**。模型可能临时上下架，调用前请确认控制台中模型仍在线。
+<Callout type="info" title="seconds 和 duration 怎么选">
+固定时长模型，例如 `seedance2.0-5s`、`kling-10s`，建议传 `seconds`。通用视频模型，例如 `sora-2`、`veo-3.1`，建议传 `duration`。
 </Callout>
 
-## 请求参数
+## 图片调用
 
-ProAPI 在 OpenAI 兼容协议之上扩展了少量与媒体生成强相关的字段。下面以参数为单位说明语义；具体每个模型的取值范围参考下方 [取值范围矩阵](#取值范围矩阵)。
-
-### 通用字段（OpenAI 协议）
-
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `model` | string | ✅ | 上方清单中的模型名 |
-| `prompt` / `messages` | string / array | ✅ | 文生图走 `prompt`，视频走 `messages`，长度至少 3 个字符 |
-| `n` | integer | ❌ | 仅图像，**仅支持 `1`** |
-| `size` | string | ❌ | 仅图像，OpenAI 标准尺寸字段，可由网关派生 `aspect_ratio`，详见下文 |
-| `stream` | bool | ❌ | 视频生成始终非流式，**请显式传 `false`** |
-
-### ProAPI 扩展字段
-
-| 参数 | 类型 | 适用 | 默认值 | 说明 |
-| --- | --- | --- | --- | --- |
-| `quality` | string | 图像全部 / `veo-3.1*` | `medium` | 控制输出清晰度档位 |
-| `aspect_ratio` | string | 全部 | `16:9` | 控制画面比例 |
-| `duration` | integer | 视频全部 | 见上表 | 控制视频时长（秒） |
-
-`quality` 取值（语义档位）：
-
-| 档位 | 同义词 | 说明 |
-| --- | --- | --- |
-| `low` | `standard` | 基础档，最快 |
-| `medium` | `hd` | 通用档，**默认** |
-| `high` | `ultra` | 高清档 |
-
-<Callout type="info" title="为什么 ProAPI 用语义档位而不是分辨率数字">
-不同模型的"高清"对应的实际分辨率不同（图像 4K vs 视频 1080p 等）。统一用 `low` / `medium` / `high` 三个语义档位，客户端无需理解每个模型的具体规格，**切模型时无需重写参数**。
-</Callout>
-
-### `size` 字段（OpenAI 协议 — 仅图像）
-
-完全遵循 OpenAI Images API，**只识别协议中真实存在的 7 个尺寸**：
-
-| `size` | 派生 `aspect_ratio` | 协议来源 |
-| --- | --- | --- |
-| `1024x1024` | `1:1` | gpt-image / dall-e |
-| `1024x1536` | `2:3` | gpt-image |
-| `1536x1024` | `3:2` | gpt-image |
-| `1024x1792` | `9:16` | dall-e-3 |
-| `1792x1024` | `16:9` | dall-e-3 |
-| `256x256` | `1:1` | dall-e-2 |
-| `512x512` | `1:1` | dall-e-2 |
-
-<Callout type="warn" title="非协议 size 不会被识别">
-传 `3840x2160`、`2048x2048` 等 OpenAI 协议外的尺寸将走默认值。要控制 4K 或自定义比例，请改用 `quality` + `aspect_ratio` 扩展字段。
-</Callout>
-
-`size` 与 `aspect_ratio` 同时传时，**`size` 派生值优先**。建议只用其中一种。
-
-### 取值范围矩阵
-
-#### 图像模型
-
-| 模型 | 支持的 `aspect_ratio` |
-| --- | --- |
-| `nano-banana` / `nano-banana-pro` | `1:1` `16:9` `9:16` `4:3` `3:4` |
-| `nano-banana-2` | 上述 + `1:4` `4:1` `1:8` `8:1` |
-| `gpt-image-2` | `1:1` `5:4` `4:5` `9:16` `21:9` `16:9` `3:2` `2:3` `4:3` `3:4` |
-| OpenArt 系列<sup>†</sup> | `1:1` `16:9` `9:16` `4:3` `3:4` `3:2` `2:3` |
-
-<small>† OpenArt 系列指 `flux-2-*`、`google-imagen-4`、`byte-plus-seedream-*`、`qwen-image-*`、`wan2-7-image*`、`grok-imagine`，详细比例支持以模型广场实时检测为准。</small>
-
-所有图像模型均支持 `quality` 三档。
-
-#### 视频模型
-
-| 模型 | `duration` 取值 | `aspect_ratio` | `quality` |
-| --- | --- | --- | --- |
-| `sora-2` | `4` / `8` / `12` | `16:9` `9:16` | – |
-| `sora-2-pro` | `4` / `8` / `12` | `16:9` `9:16` | – |
-| `kling-3.0` | `5` / `10` / `15` | `16:9` `9:16` | – |
-| `kling-o3` | `5` / `15` | `16:9` `9:16` | – |
-| `veo-3.1` | `4` / `6` / `8` | `16:9` `9:16` | 支持三档（影响输出分辨率） |
-| `veo-3.1-fast` | `4` / `6` / `8` | `16:9` `9:16` | 支持三档 |
-| `veo-3.1-ref` | `4` / `6` / `8` | `16:9` `9:16` | 支持三档 |
-
-未列出的字段对该模型无效，传了会被忽略。
-
-## 调用示例
-
-<Tabs items={['cURL · 图像（OpenAI 协议）', 'cURL · 图像（扩展字段）', 'cURL · 视频', 'Python · 图像', 'Node.js · 视频']}>
-
-<Tab value="cURL · 图像（OpenAI 协议）">
+<Tabs items={['cURL', 'Python SDK', 'Node.js SDK']}>
+<Tab value="cURL">
 
 ```bash
 curl https://newapi.prorisehub.com/v1/images/generations \
-  -H "Authorization: Bearer sk-<音视频分组令牌>" \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "nano-banana",
-    "prompt": "a cat under moonlight",
+    "prompt": "一只柴犬在草地上奔跑，油画风格",
     "n": 1,
-    "size": "1024x1792"
-  }'
-```
-
-```json title="响应（截选）"
-{
-  "created": 1778830784,
-  "data": [
-    { "url": "https://cdn.prorisehub.com/generated/xxx.png" }
-  ]
-}
-```
-
-</Tab>
-
-<Tab value="cURL · 图像（扩展字段）">
-
-```bash
-curl https://newapi.prorisehub.com/v1/images/generations \
-  -H "Authorization: Bearer sk-<音视频分组令牌>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "nano-banana-pro",
-    "prompt": "一只柴犬在富士山下奔跑，浮世绘风格",
-    "n": 1,
-    "quality": "high",
-    "aspect_ratio": "16:9"
-  }'
-```
-
-</Tab>
-
-<Tab value="cURL · 视频">
-
-```bash
-curl https://newapi.prorisehub.com/v1/chat/completions \
-  --max-time 300 \
-  -H "Authorization: Bearer sk-<音视频分组令牌>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "veo-3.1-fast",
-    "messages": [
-      {"role": "user", "content": "一只海豚在落日海面跃出水面"}
-    ],
-    "duration": 8,
     "aspect_ratio": "16:9",
-    "quality": "high",
-    "stream": false
+    "quality": "medium"
   }'
 ```
 
-视频生成的返回内容是一段包含视频 URL 的 Markdown / HTML：
-
-```html
-<video src='https://cdn.prorisehub.com/generated/xxx.mp4' controls></video>
-```
-
-提取 `src` 即可下载。
-
 </Tab>
-
-<Tab value="Python · 图像">
+<Tab value="Python SDK">
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="sk-<音视频分组令牌>",
+    api_key="sk-音视频分组令牌",
     base_url="https://newapi.prorisehub.com/v1",
     timeout=240,
 )
@@ -250,200 +102,137 @@ resp = client.images.generate(
     prompt="一只柴犬在富士山下奔跑，浮世绘风格",
     n=1,
     extra_body={
-        "quality": "high",
         "aspect_ratio": "16:9",
+        "quality": "high",
     },
 )
+
 print(resp.data[0].url)
 ```
 
-<Callout type="info" title="OpenAI SDK 扩展字段">
-官方 SDK 不识别 `quality` / `aspect_ratio` / `duration`，需通过 `extra_body`（Python）或 `body` 透传（Node）传入。
-</Callout>
-
 </Tab>
-
-<Tab value="Node.js · 视频">
+<Tab value="Node.js SDK">
 
 ```js
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: 'sk-<音视频分组令牌>',
-  baseURL: 'https://newapi.prorisehub.com/v1',
-  timeout: 5 * 60 * 1000, // 5 分钟
+  apiKey: "sk-音视频分组令牌",
+  baseURL: "https://newapi.prorisehub.com/v1",
+  timeout: 240000,
 });
 
-const resp = await client.chat.completions.create({
-  model: 'sora-2-pro',
-  messages: [{ role: 'user', content: '海浪拍打礁石的慢动作特写' }],
-  // @ts-ignore — ProAPI 扩展字段
-  duration: 12,
-  aspect_ratio: '9:16',
-  stream: false,
+const resp = await client.images.generate({
+  model: "gpt-image-2",
+  prompt: "一张未来城市夜景海报",
+  n: 1,
+  aspect_ratio: "16:9",
 });
 
-console.log(resp.choices[0].message.content);
+console.log(resp.data[0].url);
 ```
 
 </Tab>
-
 </Tabs>
 
-## 计费方式
+## 视频调用
 
-<Callout type="info" title="固定价计费">
-音视频模型采用 **固定价计费**：单次调用价格与 `quality` / `duration` / `aspect_ratio` 无关，仅与 `model` 字段相关。最终扣费 = 模型单价 × 分组倍率。
-</Callout>
+视频建议走异步任务：**创建任务 → 查询进度 → 下载 mp4**。
 
-**音视频模型分组倍率**：
+<Tabs items={['1. 创建任务', '2. 查询进度', '3. 下载视频']}>
+<Tab value="1. 创建任务">
 
-| 用户等级 | 实际倍率 |
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance2.0-5s",
+    "prompt": "一只海豚在落日海面跃出水面，电影感",
+    "seconds": 5,
+    "aspect_ratio": "16:9"
+  }'
+```
+
+响应示例：
+
+```json
+{
+  "id": "video_xxx",
+  "status": "queued"
+}
+```
+
+</Tab>
+<Tab value="2. 查询进度">
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos/video_xxx \
+  -H "Authorization: Bearer sk-音视频分组令牌"
+```
+
+响应示例：
+
+```json
+{
+  "id": "video_xxx",
+  "status": "completed",
+  "progress": 100
+}
+```
+
+常见状态：
+
+| 状态 | 含义 |
 | --- | --- |
-| 默认（default） | `x1` |
-| VIP | `x0.7` |
-| Premium | `x0.7`（与 VIP 同价，详见 [分组介绍](/token/media-unified)） |
+| `queued` | 已排队 |
+| `processing` | 正在生成 |
+| `completed` | 已完成 |
+| `failed` | 失败 |
 
-### 参考单价
+</Tab>
+<Tab value="3. 下载视频">
 
-下表为 **2026-05-24 价格快照**，单位 **元 / 次**（默认倍率 `x1`；VIP / Premium 再乘 `x0.7`）。
+```bash
+curl -L https://newapi.prorisehub.com/v1/videos/video_xxx/content \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -o output.mp4
+```
 
-视频模型为**一口价、不限时长 / 分辨率**（取消按秒计费，最大时长内任意调用单价不变）。
+完成后内容接口返回 `video/mp4`，可以直接给浏览器、Pro Lab 或其他前端播放器使用。
 
-| 系列 | 模型 | 单价 |
-| --- | --- | ---: |
-| **视频 · Sora** | `sora-2` | `¥1.80` |
-|  | `sora-2-pro` | `¥5.40` |
-| **视频 · Veo** | `veo-3.1` | `¥3.00` |
-|  | `veo-3.1-fast` | `¥0.60` |
-|  | `veo-3.1-ref` | `¥3.00` |
-| **视频 · Kling** | `kling-3.0` | `¥1.50` |
-|  | `kling-o3` | `¥1.50` |
-| **视频 · Grok** | `grok-imagine-video` | `¥0.15` |
-| **图像 · Nano Banana** | `nano-banana` | `¥0.04` |
-|  | `nano-banana-2` | `¥0.16` |
-|  | `nano-banana-pro` | `¥0.16` |
-| **图像 · GPT** | `gpt-image-2` | `¥0.04` |
-| **图像 · Imagen** | `google-imagen-4` | `¥0.08` |
-| **图像 · Flux** | `flux-2-pro` | `¥0.08` |
-|  | `flux-2-max` | `¥0.08` |
-| **图像 · Qwen** | `qwen-image-2` | `¥0.03` |
-|  | `qwen-image-2-pro` | `¥0.06` |
-|  | `qwen-image-plus` | `¥0.10` |
-| **图像 · 通义万相** | `wan2-7-image` | `¥0.03` |
-|  | `wan2-7-image-pro` | `¥0.05` |
-| **图像 · Seedream** | `byte-plus-seedream-4` | `¥0.03` |
-|  | `byte-plus-seedream-4-5` | `¥0.03` |
-|  | `byte-plus-seedream-5-lite` | `¥0.03` |
-| **图像 · Grok** | `grok-imagine` | `¥0.05` |
-|  | `grok-imagine-image` | `¥0.02` |
-|  | `grok-imagine-image-edit` | `¥0.03` |
-|  | `grok-imagine-image-lite` | `¥0.02` |
-|  | `grok-imagine-image-pro` | `¥0.05` |
+</Tab>
+</Tabs>
 
-<Callout type="info" title="为什么便宜？">
-ProAPI 采用 **1:1 人民币充值**（充 1 元 = 1 美元额度），相比按真美金计价的海外聚合站（如 sora-2 售价 ~¥10.8 / 次），同类服务大多**便宜 60-90%**。
+<Callout type="warn" title="视频生成很慢是正常的">
+视频通常需要几十秒到几分钟。客户端超时时间建议设置为 5 分钟以上，不要按聊天接口的 30 秒超时来处理。
 </Callout>
 
-<Callout type="warn" title="价格如有变动以模型广场为准">
-上游成本与渠道供给可能波动，本快照仅供参考。请到控制台 **模型广场** 查看每个模型的实时单价。
-</Callout>
+## 常用参数
 
-## 超时与长连接
+| 参数 | 适用 | 示例 | 说明 |
+| --- | --- | --- | --- |
+| `model` | 全部 | `seedance2.0-5s` | 模型名，必须在 `音视频模型` 分组里 |
+| `prompt` | 图片 / 视频 | `一只海豚跃出水面` | 生成描述 |
+| `n` | 图片 | `1` | 目前只建议传 `1` |
+| `aspect_ratio` | 图片 / 视频 | `16:9`、`9:16`、`1:1` | 画面比例 |
+| `quality` | 部分图片 / Veo | `low`、`medium`、`high` | 清晰度档位 |
+| `size` | 图片 | `1024x1024` | OpenAI 标准尺寸字段 |
+| `seconds` | 固定时长视频 | `5`、`10` | Seedance / Kling 固定秒数模型建议使用 |
+| `duration` | 通用视频 | `4`、`8`、`12` | Sora / Veo / Kling 3.0 等模型建议使用 |
+| `image` / `image_url` | 图生图 / 图生视频 | 图片 URL | 需要参考图时使用，具体字段以客户端支持为准 |
 
-视频生成是同步桥接，**实际耗时通常 150 ~ 400 秒**。
+## 参数建议
 
-<Callout type="warn" title="Cloudflare 100 秒硬限制">
-公网域名 `newapi.prorisehub.com` 走 Cloudflare 代理，**所有请求最长 100 秒**，超时返回 `504`。这是 Cloudflare 免费 / Pro 计划的硬限制。
-
-视频调用请处理：
-
-1. 客户端 `timeout` 设置 ≥ 400 秒（参考 Cherry Studio、CC-Switch、Claude Code 各自的超时配置）；
-2. 将 ProAPI 域名加入本地代理直连白名单，避免代理切断长连接；
-3. 100 秒固定返回 `504` 几乎都是 Cloudflare 网关问题，与 ProAPI 服务可用性无关。
-</Callout>
-
-## 错误码速查
-
-| 状态码 | `error_code` | 含义 / 处理 |
+| 模型 | 比例建议 | 时长建议 |
 | --- | --- | --- |
-| `400` | `validation_error` | 参数不合法。`prompt` 过短（< 3）、`aspect_ratio` 不在该模型支持列表、`duration` 越界等 |
-| `400` | `bad_request` | 模型要求参考图但未传（典型：`kling-3.0` / `veo-3.1-ref`） |
-| `404` | `model_not_found` | 模型名拼写错误或不在 `/v1/models` 列表中 |
-| `429` | `rate_limit_exceeded` | 触发模型 RPM / 用户配额限制，参考响应头 `Retry-After` 退避 |
-| `504` | – | Cloudflare 网关超时（见上节） |
+| `seedance2.0-5s` | `16:9` / `9:16` | `seconds: 5` |
+| `seedance2.0-10s` | `16:9` / `9:16` | `seconds: 10` |
+| `kling-5s` | `16:9` / `9:16` | `seconds: 5`，建议带首帧图 |
+| `kling-10s` | `16:9` / `9:16` | `seconds: 10`，建议带首帧图 |
+| `sora-2` / `sora-2-pro` | `16:9` / `9:16` | `duration: 4/8/12` |
+| `veo-3.1*` | `16:9` / `9:16` | `duration: 4/6/8` |
 
-## 常见问题
-
-<Accordions>
-
-<Accordion title="Q1：响应里的 model 字段值是什么？">
-
-`response.model` 为 ProAPI 内部规范化后的标识，可能与请求体中的 `model` 不完全一致。**计费始终按请求中的 `model` 执行**，无需关心响应中的具体取值。
-
-</Accordion>
-
-<Accordion title="Q2：能不能直接传别的模型名（如本章未列出的）？">
-
-不能。只有 `/v1/models` 端点返回的、且属于音视频分组的模型可用。其他模型名会返回 `model_not_found`。
-
-</Accordion>
-
-<Accordion title="Q3：可以批量出图吗？">
-
-图像 `n` 参数 **仅支持 `1`**。需要批量请在客户端循环发起，便于做并发控制与错误重试。
-
-</Accordion>
-
-<Accordion title="Q4：参考图 / 图生视频怎么传？">
-
-- 图像编辑：走 `POST /v1/images/edits`（multipart/form-data 上传图片二进制）；
-- 视频参考图（`veo-3.1-ref` / `kling-3.0`）：将图片作为内容块嵌入 `messages` 数组，具体格式参考控制台「模型广场」中各模型的示例代码。
-
-</Accordion>
-
-<Accordion title="Q5：`quality=auto` 或其他未列出的值会怎样？">
-
-未识别的 `quality` 值将走默认档 `medium`。请使用文档列出的标准取值，避免歧义。
-
-</Accordion>
-
-<Accordion title="Q6：`size` 和 `aspect_ratio` 同时传？">
-
-`size` 派生出的 `aspect_ratio` 会**覆盖**显式传入的 `aspect_ratio`，建议只选用一种方式：
-
-- 完全遵循 OpenAI 协议 → 仅传 `size`；
-- 需要 4K、超长视频、非协议比例 → 使用 `quality` / `aspect_ratio` / `duration` 扩展字段。
-
-</Accordion>
-
-<Accordion title="Q7：`kling-3.0` 一直报 reference_images required？">
-
-`kling-3.0` 是图生视频模型，**必须**附带至少一张参考图。如需纯文生视频，请改用 `kling-o3` / `sora-2` / `veo-3.1`。
-
-</Accordion>
-
-</Accordions>
-
-## 下一步
-
-<Cards>
-  <Card
-    href="/api/openai"
-    icon={<CpuIcon />}
-    title="OpenAI 兼容端点"
-    description="鉴权、请求结构、错误模型等通用协议基础。"
-  />
-  <Card
-    href="/paint/gpt-image"
-    icon={<PaletteIcon />}
-    title="GPT-Image-2 教程"
-    description="图像生成的完整参数与最佳实践。"
-  />
-  <Card
-    href="/token/media-unified"
-    icon={<BookOpenIcon />}
-    title="音视频分组介绍"
-    description="分组倍率、限速与模型概览。"
-  />
-</Cards>
+<Callout type="info" title="自动化调用建议">
+如果你在 Pro Lab 或自己的程序里自动调用视频，请优先使用 `/v1/videos`。这个接口的状态、进度和下载地址都更清楚，适合前端轮询和失败重试。
+</Callout>

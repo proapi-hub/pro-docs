@@ -1,58 +1,96 @@
 ---
 title: "音视频模型分组"
-description: "音视频模型分组的来源、倍率与适用场景"
+description: "音视频模型分组的当前模型、渠道和使用建议"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-## 音视频模型分组
+## 什么时候选这个分组
 
-`音视频模型` 用于画图 / 视频 / 音频生成，是站内画图与视频模型的聚合分组。倍率为 `x1`。
+只要你要做下面这些事，就选 `音视频模型`：
 
-<Callout type="info">
-本分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
+- 文生图、图生图、图片编辑。
+- 文生视频、图生视频。
+- 使用 `nano-banana`、`gpt-image-2`、`seedance`、`kling`、`sora`、`veo` 等模型。
+
+当前默认倍率：`x1`。音视频模型多数是按次计费，VIP / Premium 是否另有折扣请以模型广场为准。
+
+<Callout type="warn" title="不要用 Codex 或 Claude 令牌调画图视频">
+图片和视频模型需要 `音视频模型` 分组令牌。用 Codex、Claude、Gemini 分组令牌调用，常见结果是“模型不存在”。
 </Callout>
 
-- **分组介绍：**
+## 当前启用渠道
 
-  - 音视频模型渠道聚合分组，聚合了多个画图 / 视频 / 音频生成渠道。需要生成图片或视频时选择此分组。
-  - `grok-imagine-*` 系列已从 `Grok` 分组迁入本分组，按 `x1` 全额计费。
-  - 2026-05-23 接入 **OpenArt 聚合渠道**，新增 12 个图像生成模型（Flux 2 / Imagen 4 / Seedream / Qwen Image / Wan 2.7 等），同时 `nano-banana` / `nano-banana-pro` / `gpt-image-2` 三个已有模型增加 OpenArt 作为备用渠道，混池路由。
+| 渠道 | 主要模型 | 说明 |
+| --- | --- | --- |
+| `Adobe Firefly 聚合` | `nano-banana`、`gpt-image-2`、`sora-2`、`veo-3.1`、`kling-3.0`、`kling-o3` | 图片与视频聚合线路 |
+| `OpenArt Image 聚合` | `flux-2-*`、`qwen-image-*`、`wan2-7-image*`、`byte-plus-seedream-*`、`google-imagen-4` | 图片生成聚合线路 |
+| `ChatGPT2API 自营` | `gpt-image-2` | GPT Image 自营线路 |
+| `Ant-nano-banana-pro (cpa)` | `nano-banana-pro` | Nano Banana Pro 线路 |
+| `seed2 逆向渠` | `seedance2.0-5s`、`seedance2.0-10s`、`seedance1.5-*`、`kling-5s`、`kling-10s` | 固定时长视频线路 |
 
-- **计费倍率：** `x1`（VIP `x1` · Premium `x1`，**全等级不打折**，以保障音视频上游成本）
+## 当前模型清单
 
-- **稳定性：** ⭐⭐⭐
+### 图片模型
 
-- **适用 CLI / 工具：**
+| 模型 | 说明 | 参考单次消耗 |
+| --- | --- | --- |
+| `nano-banana` | Google 图像生成/编辑 | `0.04` |
+| `nano-banana-2` | Google 图像生成/编辑，支持更多比例 | `0.16` |
+| `nano-banana-pro` | Google 高质量图像生成/编辑 | `0.12` |
+| `gpt-image-2` | OpenAI 图像生成 | `0.08` |
+| `flux-2-pro` | Flux 2 专业版 | `0.08` |
+| `flux-2-max` | Flux 2 旗舰版 | `0.08` |
+| `google-imagen-4` | Google Imagen 4 | `0.08` |
+| `byte-plus-seedream-4` | 字节 Seedream 4 | `0.03` |
+| `byte-plus-seedream-4-5` | 字节 Seedream 4.5 | `0.03` |
+| `byte-plus-seedream-5-lite` | 字节 Seedream 5 Lite | `0.03` |
+| `qwen-image-2` | 通义 Qwen Image 2 | `0.03` |
+| `qwen-image-2-pro` | 通义 Qwen Image 2 Pro | `0.06` |
+| `qwen-image-plus` | 通义 Qwen Image Plus | `0.10` |
+| `wan2-7-image` | 通义万相 Wan 2.7 | `0.03` |
+| `wan2-7-image-pro` | 通义万相 Wan 2.7 Pro | `0.05` |
+| `grok-imagine` | xAI Grok 图像 | `0.05` |
 
-  - API 调用（画图 / 视频生成接口）
+### 视频模型
 
-- **是否支持接入第三方：**
+| 模型 | 类型 | 默认/固定时长 | 参考单次消耗 |
+| --- | --- | --- | --- |
+| `sora-2` | 文生视频 | 约 8 秒 | `1.8` |
+| `sora-2-pro` | 文生视频，高质量 | 约 8 秒 | `5.4` |
+| `veo-3.1` | 文生/图生视频 | 约 8 秒 | `3` |
+| `veo-3.1-fast` | 文生/图生视频，快速版 | 约 8 秒 | `0.6` |
+| `veo-3.1-ref` | 参考图视频 | 约 8 秒 | `3` |
+| `kling-3.0` | 可灵视频 | 约 10 秒 | `1.5` |
+| `kling-o3` | 可灵 O3 视频 | 约 15 秒 | `1.5` |
+| `kling-5s` | 可灵固定 5 秒图生视频 | 固定 5 秒 | `0.3` |
+| `kling-10s` | 可灵固定 10 秒图生视频 | 固定 10 秒 | `0.3` |
+| `seedance2.0-5s` | Seedance 2.0 固定 5 秒 | 固定 5 秒 | `0.1` |
+| `seedance2.0-10s` | Seedance 2.0 固定 10 秒 | 固定 10 秒 | `0.1` |
+| `seedance1.5-5s` | Seedance 1.5 固定 5 秒 | 固定 5 秒 | `0.28` |
+| `seedance1.5-10s` | Seedance 1.5 固定 10 秒 | 固定 10 秒 | `0.28` |
 
-  - ✅ 支持
-
-- **包含模型（编写时快照）：**
-
-  - **画图（原有）**：`nano-banana`、`nano-banana-2`、`nano-banana-pro`、`gpt-image-2`、`imagen-4`、`grok-imagine-image`、`grok-imagine-image-lite`、`grok-imagine-image-pro`、`grok-imagine-image-edit`
-  - **画图（2026-05-23 OpenArt 新增）**：
-    - Flux 系列：`flux-2-pro`、`flux-2-max`
-    - Google：`google-imagen-4`
-    - 字节跳动 Seedream：`byte-plus-seedream-4`、`byte-plus-seedream-4-5`、`byte-plus-seedream-5-lite`
-    - 阿里通义 Qwen Image：`qwen-image-2`、`qwen-image-2-pro`、`qwen-image-plus`
-    - 阿里通义万相：`wan2-7-image`、`wan2-7-image-pro`
-    - xAI Grok：`grok-imagine`
-  - **视频**：`sora-2`、`sora-2-pro`、`veo-3.1`、`veo-3.1-fast`、`veo-3.1-ref`、`kling-3.0`、`kling-o3`、`grok-imagine-video`
-
-<Callout type="info">
-不同渠道支持的模型略有差异，且画图 / 视频模型按次计费，调用前请到模型广场确认价格与可用性。
+<Callout type="info" title="参考单次消耗怎么理解">
+这里的数字来自当前站点价格接口，方便你估算成本。最终扣费仍以模型广场和实际请求记录为准。
 </Callout>
 
-<Callout type="info" title="2026-05-24 单价全面调整">
-本分组所有图片 / 视频模型单价已于 2026-05-24 重新校准（国产图像普遍下调 60-90%，部分海外视频按真实成本上调）。视频模型已统一为 **一口价、不限时长**。完整价格快照见 [音视频 API · 参考单价](/api/media#参考单价)。
-</Callout>
+## 新手推荐
 
-<Callout type="info" title="原“统一分组”已下线">
-原 `统一分组`（站内全模型聚合）已于 2026-05-15 下线，所有用户与令牌已自动并入 `default`。如需使用特定模型家族，请在控制台创建令牌时**选择对应专用分组**（Codex / Claude / Gemini / 音视频）以享受折扣倍率。
-</Callout>
+| 需求 | 推荐模型 |
+| --- | --- |
+| 便宜日常出图 | `byte-plus-seedream-4`、`qwen-image-2`、`wan2-7-image` |
+| 高质量出图 | `nano-banana-pro`、`gpt-image-2`、`flux-2-max` |
+| OpenAI 风格图片 | `gpt-image-2` |
+| 通用视频 | `veo-3.1-fast`、`seedance2.0-5s` |
+| 高质量视频 | `sora-2-pro`、`veo-3.1` |
+| 可灵图生视频 | `kling-5s`、`kling-10s`、`kling-3.0` |
 
-***
+## 调用入口
+
+- 图片生成：`POST /v1/images/generations`
+- 图片编辑：`POST /v1/images/edits`
+- 视频生成：推荐看 [音视频生成 API](/api/media)
+
+<Callout type="warn" title="视频模型要耐心等">
+视频生成通常比聊天慢很多。客户端超时时间建议设置到 5 分钟以上；如果工具支持异步任务，优先使用异步视频接口。
+</Callout>

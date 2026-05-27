@@ -14,16 +14,35 @@ import { CpuIcon, BotIcon, SparklesIcon, FilmIcon } from 'lucide-react';
 | **API 域名** | `https://newapi.prorisehub.com` |
 | **认证方式** | `Authorization: Bearer <你的令牌>` |
 | **请求格式** | JSON（`Content-Type: application/json`），仅图片编辑接口走 `multipart/form-data` |
-| **响应格式** | JSON；流式接口走 SSE (`text/event-stream`) |
+| **响应格式** | JSON；流式接口走 SSE (`text/event-stream`)；视频内容下载返回 `video/mp4` |
 | **协议** | HTTPS only |
 
 <Callout type="info" title="先创建令牌">
   所有 API 调用都需要令牌。请先参照 [令牌与分组](/token/intro) 创建合适分组的令牌再回到本章节。**令牌的分组决定了你能调用哪些模型**。
 </Callout>
 
+## 当前公开能力
+
+当前站点公开价格接口显示 4 类主要入口：
+
+| 能力 | 方法与路径 | 适合谁 |
+| --- | --- | --- |
+| OpenAI 兼容聊天 | `POST /v1/chat/completions` | OpenAI SDK、Cherry Studio、Cline、OpenCode、Cursor 等 |
+| Anthropic 原生消息 | `POST /v1/messages` | Claude Code、Claude Desktop、Cline 的 Anthropic 配置 |
+| Gemini 原生生成 | `POST /v1beta/models/{model}:generateContent` | Gemini CLI、Google Gemini SDK |
+| 图片生成 | `POST /v1/images/generations` | OpenAI Images 兼容客户端 |
+
+除此之外，站点也提供视频异步任务接口：
+
+| 能力 | 方法与路径 | 说明 |
+| --- | --- | --- |
+| 创建视频任务 | `POST /v1/videos` | 返回任务 ID，适合视频生成 |
+| 查询视频任务 | `GET /v1/videos/{video_id}` | 查看任务状态、进度和结果 |
+| 下载视频内容 | `GET /v1/videos/{video_id}/content` | 完成后返回 `video/mp4`，支持浏览器和客户端直接下载 |
+
 ## 选择哪个端点
 
-ProAPI 同时兼容 **OpenAI / Anthropic / Google Gemini** 三套官方 API schema。根据你客户端期望的协议，选择对应章节：
+ProAPI 同时兼容 **OpenAI / Anthropic / Google Gemini** 三套常见 API 格式。根据你客户端期望的协议，选择对应章节：
 
 <Cards>
   <Card
@@ -54,6 +73,27 @@ ProAPI 同时兼容 **OpenAI / Anthropic / Google Gemini** 三套官方 API sche
 
 <Callout type="warn" title="同一个模型可以用多种端点吗">
   **可以**，但要选你客户端最适配的那一种。例如 Claude 模型既可以走 OpenAI 兼容的 `/v1/chat/completions`，也可以走原生的 `/v1/messages`。两条路都能用，但原生 `/v1/messages` 对 `tool_use`、`thinking`、`cache_control` 的支持更完整。
+</Callout>
+
+## 查询当前模型和价格
+
+如果你要让程序自动判断“有哪些模型”“属于哪个分组”“大概怎么计费”，可以读公开价格接口：
+
+```bash
+curl https://newapi.prorisehub.com/api/pricing
+```
+
+这个接口不需要 API Key，返回内容里最常用的是：
+
+| 字段 | 说明 |
+| --- | --- |
+| `data` | 模型列表，包含模型名、说明、分组、价格和支持的端点类型 |
+| `group_ratio` | 当前分组倍率 |
+| `usable_group` | 当前可选分组及说明 |
+| `supported_endpoint` | 当前公开支持的主要端点 |
+
+<Callout type="info" title="给自动化脚本的建议">
+不要把文档里的模型列表写死。更稳的做法是：启动时读取 `/api/pricing`，再结合用户令牌所在分组筛选可用模型。
 </Callout>
 
 ## 通用请求示例

@@ -1,148 +1,96 @@
 ---
 title: "令牌与分组"
-description: "ProAPI 令牌分组的概念、计费倍率，以及如何查看最新分组"
+description: "从小白视角理解 ProAPI 分组、倍率、模型广场与当前可用渠道"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-## 什么是令牌分组
+## 先记住一句话
 
-在 ProAPI，**分组（Group）** 决定了你的令牌能调用哪些上游渠道、享受什么计费倍率。
+**令牌分组 = 你这把 API Key 可以使用哪些模型 + 按什么倍率扣额度。**
 
-创建令牌时选择不同的分组，本质上是在选择**不同来源的模型号池**：有的来自官方订阅账号，有的来自逆向渠道，有的是聚合号池。它们在**稳定性、价格、适用场景**上各有取舍。
+创建令牌时一定要选对分组。分组选错时，最常见的表现是：
 
-<Callout type="info" title="一句话理解">
-分组 = 模型来源 + 计费倍率。选对分组，既省钱又稳定；选错分组，要么贵，要么报“模型不存在”。
+- 调用时报 `model not found` 或“模型不存在”。
+- 明明模型广场能看到模型，但你的令牌无法调用。
+- 可以调用，但倍率不是你预期的那一档。
+
+<Callout type="info" title="给新手的建议">
+如果你只是想最快跑通，先用对应用途的专用分组：写代码选 `Codex-Plus-Pro 混池`，Claude Code 选 `Kiro-Claude-高缓存` 或 `claude-max-满血`，Gemini CLI 选 `Ant-Gemini`，画图/视频选 `音视频模型`。
 </Callout>
 
-***
+## 当前分组总览
 
-## 计费倍率怎么算
+以下数据来自当前站点的真实价格接口与后台渠道快照，更新时间：**2026-05-27**。
 
-![image-20260525135714499](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260525135714499.png)
+| 分组 | 当前默认倍率 | 稳定性 | 适合做什么 | 新手建议 |
+| --- | --- | --- | --- | --- |
+| `default` | `x1` | 取决于具体模型 | 通用兜底分组，可见全站模型 | 不追求折扣时使用 |
+| `Codex-Pro` | `x0.3` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，纯 Pro 号池 | 追求稳定选它 |
+| `Codex-Plus-Pro 混池` | `x0.12` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，Pro + Plus 混池 | 日常编程首选 |
+| `claude-max-满血` | `x1.2` | ⭐⭐⭐⭐⭐ | Claude 官方满血 20x 渠道 | 生产环境和重要任务优先 |
+| `Ant-Claude` | `x0.4` | ⭐⭐⭐ | 反重力 Claude 渠道 | 普通 Claude 任务可用 |
+| `Kiro-Claude-高缓存` | `x0.2` | ⭐⭐⭐⭐ | Claude 高缓存渠道 | Claude Code 性价比首选 |
+| `claude-reverse-高缓存` | `x0.1` | ⭐⭐ | 低价 Claude 备用渠道 | 适合作备用，不建议单独依赖 |
+| `Windsurf` | `x0.25` | ⭐ | Claude / GPT / Gemini 混合逆向渠道 | 低价备用，稳定性较弱 |
+| `Ant-Gemini` | `x0.5` | ⭐⭐⭐ | Gemini CLI 与 Gemini API | Gemini 用户选它 |
+| `Grok` | `x0.1` | ⭐⭐⭐ | Grok 对话、推理、搜索类模型 | Grok 用户选它 |
+| `音视频模型` | `x1` | ⭐⭐⭐ | 图片、视频生成模型 | 画图/视频必须选它 |
 
-每个分组名后面会显示一个类似 `x0.3` 的数字，这就是该分组的**计费倍率**：
+<Callout type="warn" title="旧文档中的几个变化">
+- `claude-max-特价-满血` 当前不在真实分组列表中，文档已移除。
+- `Kiro-Claude-高缓存` 当前默认倍率是 `x0.2`，不是旧文档里的 `x0.3`。
+- `claude-reverse-高缓存` 当前默认倍率是 `x0.1`，不是旧文档里的 `x0.2`。
+- `Grok` 当前默认倍率是 `x0.1`，不是旧文档里的 `x0.005`。
+</Callout>
 
-所有的模型倍率严格对齐官方定价
-注意一点！
+## 怎么看“倍率”
 
-**越贵的模型即使越便宜的分组也同样会消耗较高余额**
+倍率只决定在模型标准价格基础上再乘多少。
 
-**越便宜的模型即使分组看起来较贵但实际上耗的余额并不会很高**
+举例：
 
-- 倍率 **< 1** 享折扣：`0.3` 倍 = 三折，`0.08` 倍 = 0.8 折
-- 倍率 **= 1** 原价：按模型标准价计费
-- 倍率 **> 1** 需加价：`1.5` 倍 = 额外支付 50% 费用，这类大于一的渠道并不代表 **比官方贵** 平台是 1¥ = 1💲 除非倍率大于7 否则都会比官方大部分情况下便宜
-- 不选择分组则使用你的默认计费倍率（`1x`）
-
-> 同一个模型在不同分组下的价格可能相差几十倍，**选分组前务必看清倍率**。
-
-***
-
-## 用户等级折扣（VIP / Premium）
-
-普通用户按分组的**默认倍率** 计费。账号被升级到 **VIP** 或 **Premium** 后，可在大多数分组上享受额外折扣（普遍 **VIP ×0.7 / Premium ×0.5**），无需切换分组。
-
-| 用户等级 | 通用规则 | 实际计费倍率 |
+| 模型标准消耗 | 分组倍率 | 实际扣除 |
 | --- | --- | --- |
-| **默认（default）** | 不打折 | 分组默认倍率 |
-| **VIP** | 额外 **7 折**（部分分组例外） | 见下方"分组总览"VIP 列 |
-| **Premium** | 额外 **5 折**（部分分组例外） | 见下方"分组总览"Premium 列 |
+| 10 额度 | `x1` | 10 额度 |
+| 10 额度 | `x0.5` | 5 额度 |
+| 10 额度 | `x0.1` | 1 额度 |
+| 10 额度 | `x1.2` | 12 额度 |
 
-<Callout type="warn" title="重要：折扣并非全分组统一">
-以下分组**有特殊折扣规则**，请直接以"分组总览"表格中的真实倍率为准：
-
-- `Ant-Claude`：VIP / Premium 均为 **×0.4**（不打折，与默认同价）。原因：反重力 Claude 上游成本较高，所有等级统一价。
-- `音视频模型`：VIP / Premium 均为 **×1**（不打折，与默认同价）。原因：音视频生成模型上游成本较高且按次计费。
-- `claude-max-满血`：默认 **×1.2**、VIP **×1.0**、Premium **×0.95**（非 ×0.7 / ×0.5）。
-- `claude-max-特价-满血`：默认 **×0.7**、VIP **×0.6**、Premium **×0.5**（非 ×0.7 / ×0.5 叠乘）。
-- `Codex-Plus-Pro 混池`：默认 **×0.12**、VIP **×0.09**、Premium **×0.08**（折扣略小于通用规则）。
-
-其余分组（Codex-Pro / Kiro-Claude-高缓存 / claude-reverse-高缓存 / Windsurf / Ant-Gemini / Grok）严格遵守 **VIP ×0.7 / Premium ×0.5** 规则。
+<Callout type="info" title="不要只看倍率">
+贵模型即使用低倍率，单次消耗也可能高；便宜模型即使用 `x1`，也可能很省。最终请以模型广场显示的模型价格为准。
 </Callout>
 
-<Callout type="info" title="举例">
-`Ant-Gemini` 分组默认倍率 `x0.5`（适用通用规则）：
-- 默认用户 = `x0.5`
-- VIP 用户 = `0.5 × 0.7 = x0.35`
-- Premium 用户 = `0.5 × 0.5 = x0.25`
+## 如何查看最新模型
 
-下方"分组总览"表格中**第 3、4 列**已经为你算好了 VIP/Premium 的最终倍率（含所有例外），可直接查阅。
+站点里的模型和渠道会随上游情况调整，**控制台的“模型广场”永远优先于文档快照**。
+
+1. 登录控制台。
+2. 点击右上角 **模型广场**。
+3. 左侧选择令牌分组。
+4. 右侧查看该分组下可调用的模型、价格和可用状态。
+
+<Callout type="warn" title="为什么要先看模型广场">
+很多调用失败不是代码问题，而是令牌分组没有这个模型。调用前先看模型广场，可以少走很多弯路。
 </Callout>
 
-<Callout type="warn" title="如何升级到 VIP / Premium">
-账号等级升级一般跟随充值额度或长期消费记录自动评定，也可联系站长申请。等级变动后 **新发起的请求** 立即按新倍率计费，老的进行中请求维持原状。
-</Callout>
+## 目前有哪些真实渠道
 
-***
+当前后台共有 **24 条渠道**：
 
-## 如何查看最新分组
+- **18 条启用**：正常参与路由。
+- **6 条禁用**：保留配置，但不会参与正常调用。
+- 分组覆盖：Codex、Claude、Gemini、Grok、音视频模型、Windsurf 与 default。
 
-分组与模型会随号池调整而变化，**控制台里的“模型广场”永远是最新的**。
-
-1. 在控制台面板，点击右上角 **“模型广场”**，进入分组与模型的查看页面。
-
-2. 进入模型广场后，左侧红框处就是[创建 API 令牌](/)步骤中提到的令牌分组，右侧就是该分组下所存在的模型。
-
-3. 左侧分组名后显示的类似 `x0.5` 就是该分组的计费倍率。
-
-![image-20260514223706302](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514223706302.png)
-
-
-
-![image-20260514223837154](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/image-20260514223837154.png)
-
-<Callout type="warn" title="为什么一定要学会这一步">
-很多人只看分组名，却不知道分组下到底有哪些模型，稀里糊涂配置后使用就提示“模型不存在”。
-**各分组详情页列出的模型为编写时快照，最终请以模型广场的实时列表为准。**
-</Callout>
-
-如下图动态图所示，可以在模型广场筛选出该分组下可调用的所有模型：
-
-![TL160ADMP26](https://prorise-blog.oss-cn-guangzhou.aliyuncs.com/cover/TL160ADMP26.gif)
-
-
-
-***
-
-## 分组总览
-
-| 分组 | 默认倍率 | VIP | Premium | 稳定性 | 主要用途 | 第三方接入 |
-| --- | --- | --- | --- | --- | --- | --- |
-| `Codex-Pro` | **x0.3** | x0.21 | x0.15 | ⭐⭐⭐⭐⭐ | Codex 官方纯血 Pro 中转 | ✅ 支持 |
-| `Codex-Plus-Pro 混池` | **x0.12** | x0.09 | x0.08 | ⭐⭐⭐⭐⭐ | Codex 官方 Pro + Plus 混池 | ✅ 支持 |
-| `Ant-Claude` | **x0.4** | x0.4 ⚠ | x0.4 ⚠ | ⭐⭐⭐ | 反重力官方 Claude 中转（VIP/Premium 不打折） | ✅ 支持 |
-| `Kiro-Claude-高缓存` | **x0.3** | x0.21 | x0.15 | ⭐⭐⭐⭐ | Kiro 高缓存渠道中转 | ✅ 支持 |
-| `claude-reverse-高缓存` | **x0.2** | x0.14 | x0.10 | ⭐⭐ | 逆向高缓存渠道，非自建号池可能不稳定 | ✅ 支持 |
-| `claude-max-满血` | **x1.2** | x1.0 | x0.95 | ⭐⭐⭐⭐⭐ | 官方满血 20x 渠道（拦截 cctest 测试流量防封） | ✅ 支持 |
-| `claude-max-特价-满血` | **x0.7** | x0.6 | x0.5 | ⭐⭐⭐ | 官方特价 20x 渠道（日 1 万美刀额度，跑完即止） | ✅ 支持 |
-| `Windsurf` | **x0.25** | x0.175 | x0.125 | ⭐ | Windsurf 逆向渠道（含 Claude / GPT 模型） | ✅ 支持 |
-| `Ant-Gemini` | **x0.5** | x0.35 | x0.25 | ⭐⭐⭐ | 反重力官方 Gemini 中转 | ✅ 支持 |
-| `Grok` | **x0.005** | x0.0035 | x0.0025 | ⭐⭐⭐ | Grok 官方渠道中转 | ✅ 支持 |
-| `音视频模型` | **x1** | x1 ⚠ | x1 ⚠ | ⭐⭐⭐ | 图像 / 视频生成模型聚合分组（VIP/Premium 不打折） | ✅ 支持 |
-
-<Callout type="info">
-所有分组**均允许接入第三方工具**（Cline、OpenCode、各类逆向客户端等），可放心使用。
-</Callout>
-
-<Callout type="warn" title="2026-05-25 大版本更新">
-- **下线** `Codex-Plus`（×0.08），新分组 `Codex-Plus-Pro 混池`（×0.12）替代，号池由 Codex 官方 Pro + Plus 混合组成，稳定性更高。
-- **拆分** `claude-max`（×0.6）→ `claude-max-满血`（×1.2，满血 20x 防封）+ `claude-max-特价-满血`（×0.7，特价 20x 限量）。
-- **新增** `claude-reverse-高缓存`（×0.2），逆向高缓存 Claude 渠道，倍率更低但稳定性偏弱。
-
-如果你的令牌仍在使用 `Codex-Plus` 或 `claude-max`，请前往控制台 → 令牌管理 → 编辑令牌，切换至新分组。
-</Callout>
-
-***
+想看每条渠道对应哪个分组、有哪些模型，请阅读 [当前渠道总览](/token/channels)。
 
 ## 分组详情
 
-按模型家族查看各分组的来源、倍率、适用场景与模型列表：
-
 <Cards>
-  <Card title="Claude 系列分组" href="/token/claude" description="Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / claude-max-满血 / claude-max-特价-满血 / Windsurf" />
+  <Card title="当前渠道总览" href="/token/channels" description="按真实后台渠道整理：启用状态、分组、主要模型和用途。" />
+  <Card title="Claude 系列分组" href="/token/claude" description="claude-max-满血 / Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / Windsurf" />
   <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus-Pro 混池" />
-  <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok" />
-  <Card title="音视频模型分组" href="/token/media-unified" description="音视频模型（画图 / 视频 / 音频）" />
+  <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok 当前模型与倍率。" />
+  <Card title="音视频模型分组" href="/token/media-unified" description="图片、视频模型清单与使用建议。" />
 </Cards>

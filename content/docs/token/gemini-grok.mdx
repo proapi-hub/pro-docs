@@ -1,84 +1,83 @@
 ---
 title: "Gemini 与 Grok 分组"
-description: "Ant-Gemini、Grok 分组的来源、倍率与适用场景"
+description: "Ant-Gemini、Grok 当前倍率、模型和适用场景"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
-## Gemini 与 Grok 分组
+## 总览
 
-`Ant-Gemini` 面向 Gemini CLI，`Grok` 提供 Grok 全系列模型（含画图 / 视频）。
+| 分组 | 当前倍率 | 稳定性 | 适合场景 |
+| --- | --- | --- | --- |
+| `Ant-Gemini` | `x0.5` | ⭐⭐⭐ | Gemini CLI、Gemini 原生 API、Gemini 模型调用 |
+| `Grok` | `x0.1` | ⭐⭐⭐ | Grok 对话、推理、搜索类模型 |
 
-<Callout type="info">
-各分组模型列表为编写时快照，最终以**模型广场**实时列表为准。
+<Callout type="warn" title="Grok 旧倍率已过期">
+旧文档里的 `Grok x0.005` 已不是当前真实倍率。当前价格接口显示 `Grok` 分组默认倍率为 `x0.1`。
 </Callout>
 
 <Tabs items={['Ant-Gemini', 'Grok']}>
 <Tab value="Ant-Gemini">
 
-- **分组介绍：**
+## Ant-Gemini
 
-  - 反重力官方 Gemini 中转，逆向 Google Antigravity 得到的 Gemini 模型渠道。提供 Gemini 3 / 2.5 全系列，并包含画图模型。
-
-- **计费倍率：** `x0.5`（VIP `x0.35` · Premium `x0.25`）
-
-- **稳定性：** ⭐⭐⭐
-
-- **适用 CLI / 工具：**
-
-  - Gemini CLI（推荐）
-  - Cline 等第三方工具
-
-- **是否支持接入第三方：**
-
-  - ✅ 支持
-
-- **包含模型（编写时快照）：**
-
+- **倍率：** `x0.5`
+- **定位：** Gemini 模型主分组。
+- **适合：** Gemini CLI、Cline 的 Gemini 配置、Google Gemini 原生接口。
+- **当前主要模型：**
   - `gemini-3.1-pro-preview`
   - `gemini-3-pro-preview`
-  - `gemini-3.1-flash-lite-preview`
   - `gemini-3-flash-preview`
-  - `gemini-3.1-flash-image`
+  - `gemini-3.1-flash-lite-preview`
+  - `gemini-3-flash-agent`
+  - `gemini-3.5-flash`
+  - `gemini-3.5-flash-low`
   - `gemini-2.5-pro`
   - `gemini-2.5-flash`
   - `gemini-2.5-flash-lite`
 
-<Callout type="info" title="模型名提示">
-逆向渠道的模型名相对官方 API 形式有所变化，配置 Cline 等插件前，请先到**模型广场**确认本分组下的准确模型名，避免出现“模型不存在”问题。
+<Callout type="info" title="Base URL 提醒">
+Gemini 原生协议使用 `https://newapi.prorisehub.com`，不要在 SDK 的 Gemini 原生配置里手动追加 `/v1`。
 </Callout>
 
 </Tab>
 <Tab value="Grok">
 
-- **分组介绍：**
+## Grok
 
-  - Grok 官方渠道中转，倍率全站最低（`x0.005`）。提供 Grok 4.20 全系列（含 reasoning / expert / fast / super 等变体）。`grok-imagine` 画图与视频模型已迁移至 **音视频模型** 分组（按全额 `x1` 计费）。
+- **倍率：** `x0.1`
+- **定位：** Grok 对话、推理和搜索类模型分组。
+- **适合：** Grok 聊天、搜索增强、推理任务。
+- **当前主要模型：**
+  - `grok-4.3-beta`
+  - `grok-4.3-low`
+  - `grok-4.3-medium`
+  - `grok-4.3-high`
+  - `grok-4.20-auto`
+  - `grok-4.20-fast`
+  - `grok-4.20-expert`
+  - `grok-4.20-0309`
+  - `grok-4.20-0309-reasoning`
+  - `grok-4.20-0309-non-reasoning`
+  - `grok-4.20-multi-agent-*`
+  - `grok-build-console`
 
-- **计费倍率：** `x0.005`（VIP `x0.0035` · Premium `x0.0025`）
-
-- **稳定性：** ⭐⭐⭐
-
-- **适用 CLI / 工具：**
-
-  - API 调用
-  - 各类第三方客户端
-
-- **是否支持接入第三方：**
-
-  - ✅ 支持
-
-- **包含模型（编写时快照）：**
-
-  - 对话 / 推理：`grok-4.3-beta`、`grok-4.20-auto`、`grok-4.20-fast`、`grok-4.20-expert`、`grok-4.20-0309`、`grok-4.20-0309-reasoning`、`grok-4.20-0309-reasoning-super`、`grok-4.20-0309-non-reasoning`、`grok-4.20-0309-non-reasoning-super`、`grok-4.20-0309-super`
-
-<Callout type="info" title="画图 / 视频请走音视频模型分组">
-`grok-imagine-image / image-lite / image-pro / image-edit / video` 系列已统一归到 **音视频模型** 分组，按 `x1` 全额计费，避免 `x0.005` 的 Grok 倍率与按次计费的成本错位。
+<Callout type="warn" title="画图和视频怎么选">
+当前价格表中 `grok-imagine`、`grok-imagine-image-*`、`grok-imagine-video` 仍可见于 Grok 相关模型，但图片/视频调用建议优先使用 `音视频模型` 分组，并以模型广场显示为准。
 </Callout>
 
 </Tab>
 </Tabs>
 
-***
+## 常见问题
 
+| 问题 | 处理方式 |
+| --- | --- |
+| Gemini CLI 提示模型不存在 | 检查令牌是否选择 `Ant-Gemini` 分组 |
+| Grok 调用费用和旧文档不一致 | 以当前 `x0.1` 分组倍率和模型广场价格为准 |
+| 不确定模型名 | 先到模型广场选择分组，再复制模型名 |
+
+<Callout type="info" title="更新时间">
+本页按 2026-05-27 线上价格接口与渠道快照更新。
+</Callout>

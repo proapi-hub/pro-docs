@@ -24,6 +24,9 @@ OpenAI 兼容端点是 ProAPI **最通用** 的接入方式。无论上游是 GP
 | `POST /v1/embeddings` | 文本向量化 |
 | `POST /v1/images/generations` | 文生图 |
 | `POST /v1/images/edits` | 图生图 / 图片编辑 |
+| `POST /v1/videos` | 创建视频生成任务 |
+| `GET /v1/videos/{video_id}` | 查询视频任务状态 |
+| `GET /v1/videos/{video_id}/content` | 下载完成后的视频内容 |
 | `GET /v1/models` | 列出当前令牌可访问的模型 |
 
 <Callout type="info" title="Base URL">
@@ -126,8 +129,8 @@ OpenAI SDK 会自动处理这个协议，你只需要 `stream=True`。
 
 | 上游 | 推荐分组 | 注意点 |
 | --- | --- | --- |
-| Claude | `Ant-Claude` / `Kiro-Claude-高缓存` / `claude-max` / `Windsurf` | 使用 OpenAI schema 时 `tool_use` 会被翻译；如要原生工具调用建议用 [`/v1/messages`](/api/anthropic) |
-| GPT / Codex | `Codex-Pro` / `Codex-Plus` | 推理类模型（如 `gpt-5.1-high`）通过 `reasoning_effort` 控制 |
+| Claude | `Ant-Claude` / `Kiro-Claude-高缓存` / `claude-max-满血` / `claude-reverse-高缓存` / `Windsurf` | 使用 OpenAI schema 时 `tool_use` 会被翻译；如要原生工具调用建议用 [`/v1/messages`](/api/anthropic) |
+| GPT / Codex | `Codex-Pro` / `Codex-Plus-Pro 混池` | 推理类模型通过 `reasoning_effort` 控制 |
 | Gemini | `Ant-Gemini` | 大部分场景兼容，但 `safety_settings` / `system_instruction` 等原生字段不可用，需走 [Gemini 端点](/api/gemini) |
 | Grok | `Grok` | 完全兼容 OpenAI 协议 |
 
@@ -162,6 +165,59 @@ curl https://newapi.prorisehub.com/v1/images/generations \
   - 图片生成不要传 `stream`。
   - 视频生成虽然也走 OpenAI 风格，但通常 **耗时 60s 以上**，必须做长连接处理，详见 [音视频模型章节](/api/media)。
 </Callout>
+
+## /v1/videos
+
+视频生成建议使用异步任务接口。它比把视频塞进聊天接口更清晰：先创建任务，再轮询状态，完成后下载 mp4。
+
+### 创建任务
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance2.0-5s",
+    "prompt": "一只海豚在落日海面跃出水面",
+    "seconds": 5,
+    "aspect_ratio": "16:9"
+  }'
+```
+
+成功后会返回任务 ID，例如：
+
+```json
+{
+  "id": "video_xxx",
+  "status": "queued"
+}
+```
+
+### 查询状态
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos/video_xxx \
+  -H "Authorization: Bearer sk-音视频分组令牌"
+```
+
+常见状态：
+
+| 状态 | 含义 |
+| --- | --- |
+| `queued` | 已排队 |
+| `processing` | 正在生成 |
+| `completed` | 已完成，可以下载 |
+| `failed` | 失败，查看返回里的错误信息 |
+
+### 下载视频
+
+```bash
+curl -L https://newapi.prorisehub.com/v1/videos/video_xxx/content \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -o output.mp4
+```
+
+完成后内容接口会返回 `video/mp4`，浏览器、Pro Lab 和常见客户端都可以直接识别。
 
 ## /v1/embeddings
 

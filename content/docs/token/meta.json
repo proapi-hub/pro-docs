@@ -2,6 +2,7 @@
   "title": "令牌与分组",
   "pages": [
     "intro",
+    "channels",
     "claude",
     "codex",
     "gemini-grok",
