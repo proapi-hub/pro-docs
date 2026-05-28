@@ -2,13 +2,16 @@
   "title": "ProAPI 文档",
   "pages": [
     "index",
+    "---接入指南---",
     "token",
-    "api",
-    "ccswitch",
-    "prolab",
     "cli",
-    "paint",
+    "ccswitch",
     "advanced",
+    "---API 与创作---",
+    "api",
+    "prolab",
+    "paint",
+    "---帮助---",
     "faq",
     "tos"
   ]

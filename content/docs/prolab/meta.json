@@ -3,7 +3,9 @@
   "pages": [
     "index",
     "quick-start",
+    "chat",
     "creation",
-    "chat"
+    "prompts",
+    "settings"
   ]
 }

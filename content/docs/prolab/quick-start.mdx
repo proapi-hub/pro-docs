@@ -1,219 +1,141 @@
 ---
 title: "5 分钟接入 ProAPI"
-description: "ProLab 默认空白配置，跟随本指南三步导入 ProAPI 密钥即可开始创作"
+description: "按截图把 ProAPI 令牌接入 ProLab，并确认模型已经可用"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
-import { KeyRoundIcon, CheckCircleIcon, AlertTriangleIcon } from 'lucide-react';
+import { CheckCircleIcon, KeyRoundIcon } from 'lucide-react';
 
-<Callout type="info" title="阅读对象">
-本页面向**首次使用 ProLab 的客户**。如果你已经接入完成想了解具体功能，请直接看 [创作工作台](/prolab/creation) 或 [对话](/prolab/chat)。
+<Callout type="info" title="这一页适合谁">
+第一次打开 ProLab，或者进入对话 / 创作后发现模型下拉是空的，就从这里开始。
 </Callout>
 
-## 一图看懂接入流程
+## 准备好 ProAPI 令牌
 
-```
-打开 ProLab  →  顶栏「设置」  →  「快速接入 ProAPI」  →  粘贴密钥  →  选择模型  →  完成
-   零安装         默认空配置            一键弹窗         3 字段        多选       开始创作
-```
+![ProLab 首页](/assets/image/ProLab/01-home.webp)
 
-全程不需要写配置文件、不需要选模型 ID，**约 60 秒可完成**。
-
----
-
-## Step 0：先拿到 ProAPI 密钥
-
-如果你已有密钥（`sk-` 开头），跳过本步。
+在进入设置之前，你需要先准备一个 ProAPI 令牌。令牌通常以 `sk-` 开头。  
+如果你主要测试图片和视频模型，建议创建 **音视频模型** 分组令牌；如果你还要测试 `gpt-5.5` 这类对话模型，需要使用包含对话模型的令牌。
 
 <Cards>
   <Card
     href="https://newapi.prorisehub.com"
     icon={<KeyRoundIcon />}
-    title="前往 ProAPI 控制台注册"
-    description="人民币 1:1 充值，新建 音视频分组 令牌（推荐），复制 sk- 开头的字符串。"
+    title="前往 ProAPI 控制台"
+    description="注册、充值、创建令牌，然后复制完整的 sk- 字符串。"
   />
   <Card
     href="/token/intro"
     icon={<CheckCircleIcon />}
-    title="不知道选哪个分组？"
-    description="ProLab 推荐使用「音视频模型」分组，可调用全部图像与视频模型。"
+    title="查看令牌分组"
+    description="不知道该选哪个分组时，先看令牌分组说明。"
   />
 </Cards>
 
-<Callout type="warn" title="分组选错了无法调用">
-ProLab 的「创作」面板使用图像 / 视频模型，请务必创建 **音视频模型** 分组令牌；如果只创建了 Claude / Codex 分组令牌，调用 `sora-2` / `nano-banana` 等模型会报 `model_not_found`。
-</Callout>
-
-## Step 1：打开 ProLab 设置页
-
-进入 ProLab 后，点击顶部导航栏的「**设置**」，左侧默认停留在「**上游配置**」标签。
-
-{/* 图片占位 · 对应 Image #6 - 设置页默认状态。左侧 8 个标签（上游配置/代理配置/模型测试/导入导出/Prompt 设置/提示词同步/MCP 服务/通用设置），中间一张「ProAPI」卡片（写着 https://newapi.prorisehub.com、20 模型、"未配置平台"），右上角两个按钮：「快速接入 ProAPI」与「+ 自定义配置」。建议路径：/assets/image/ProLab/02-settings-empty.webp */}
+## 打开设置页
 
 ![ProLab 设置页 - 默认状态](/assets/image/ProLab/02-settings-empty.webp)
 
-<Callout type="info" title="为什么默认显示「未配置平台」？">
-ProLab 默认带了一张 ProAPI 占位卡片（含端点地址 `https://newapi.prorisehub.com`），但**没有预置任何密钥**，所以显示「未配置平台」。下一步导入密钥后即可激活。
+登录 ProLab 后，点击顶部导航的 **设置**。  
+这张图里左侧已经停在 **上游配置**，右上角有 **快速接入 ProAPI**。第一次接入就点这个按钮。
+
+<Callout type="info" title="看到“未配置平台”是正常的">
+默认 ProAPI 卡片只是预置了地址，没有预置你的密钥。粘贴令牌后，它才会变成可用上游。
 </Callout>
 
-### 设置页的 8 个标签速览
-
-| 标签 | 用途 | 客户首次对接是否必看 |
-| --- | --- | :---: |
-| **上游配置** | 管理 API 提供商（端点 + 密钥） | ✅ 必看 |
-| 代理配置 | 走代理 / 自定义网络出口 | ⚪ 国内直连可跳过 |
-| 模型测试 | 一键测试某个模型是否可用 | ✅ 推荐 |
-| 导入 / 导出 | 备份 / 迁移配置 | ⚪ 多端同步时用 |
-| Prompt 设置 | 全局系统提示词 | ⚪ 进阶用户 |
-| 提示词同步 | 个人提示词库云同步 | ⚪ 进阶用户 |
-| MCP 服务 | 接入 Model Context Protocol | ⚪ 进阶用户 |
-| 通用设置 | 界面 / 主题 / 语言 | ⚪ 自定义偏好 |
-
-## Step 2：点击「快速接入 ProAPI」
-
-在「上游配置」标签右上角，点击黑色按钮「**⚡ 快速接入 ProAPI**」，弹出 3 步引导弹窗。
-
-{/* 图片占位 · 对应 Image #7 - 快速接入 ProAPI 弹窗第一步。标题"快速接入 ProAPI"，3 步进度条（填写密钥 / 选择模型 / 完成），表单：API 端点（锁定 https://newapi.prorisehub.com，右侧"高级：自定义端点"链接）、API 密钥（sk- 占位，右侧"还没有密钥？前往注册 →"链接）、配置名称（默认 ProAPI）。底部「取消」「下一步 →」按钮。建议路径：/assets/image/ProLab/03-quick-import-step1.webp */}
+## 填写密钥
 
 ![快速接入 ProAPI - 填写密钥](/assets/image/ProLab/03-quick-import-step1.webp)
 
-### 三步流程详解
+弹窗第一步只需要确认 3 个字段：
 
-<Tabs items={["① 填写密钥","② 选择模型","③ 完成"]}>
+| 字段 | 新手怎么填 |
+| --- | --- |
+| **API 端点** | 保持默认 `https://newapi.prorisehub.com` |
+| **API 密钥** | 粘贴完整 `sk-...` 令牌 |
+| **配置名称** | 默认 `ProAPI` 即可 |
 
-<Tab value="① 填写密钥">
+填完后点 **下一步**。ProLab 会用这个令牌去拉取可用模型。
 
-| 字段 | 默认 / 示例 | 说明 |
-| --- | --- | --- |
-| **API 端点** | `https://newapi.prorisehub.com` | 已锁定，**无需修改**；如需走自建中转，点右上「高级：自定义端点」 |
-| **API 密钥** | `sk-...` | 粘贴 Step 0 拿到的令牌 |
-| **配置名���** | `ProAPI` | 当前 ProLab 内的展示名，可改成「我的主号 / 公司账号」 |
-
-填完点击「**下一步 →**」。
-
-<Callout type="info" title="密钥粘贴后不会立即校验">
-ProLab 在「下一步」时才会拉取该密钥的可用模型列表，如果密钥错误会在此处提示。**请确保从 ProAPI 控制台「令牌管理」复制完整字符串，含 `sk-` 前缀**。
+<Callout type="warn" title="不要漏复制 sk- 前缀">
+令牌少一个字符都会导致模型拉取失败。建议从 ProAPI 控制台复制后直接粘贴，不要手动改。
 </Callout>
 
-</Tab>
-
-<Tab value="② 选择模型">
-
-{/* 图片占位 · 对应「快速接入弹窗 - Step 2 选择模型」。如有截图请在此插入；暂时使用 placeholder。建议路径：/assets/image/ProLab/03-quick-import-step2.webp */}
+## 选择要启用的模型
 
 ![快速接入 ProAPI - 选择模型](/assets/image/ProLab/03-quick-import-step2.webp)
 
-ProLab 自动拉取该密钥可用的全部模型，按系列分组（如 Sora / Veo / Kling / Nano Banana / Qwen Image …）。
+这一页会显示当前令牌能调用的模型。截图里可以看到模型被分成 **绘图** 和 **视频**，全模型令牌还会出现 **对话**。  
+第一次使用建议保持全选，先让 ProLab 把可用模型都导入；后面觉得下拉太长，再回到上游配置里精简。
 
-- ✅ **全选**：推荐首次使用，覆盖所有可用模型；
-- ⚪ **按需勾选**：只勾选会用到的，减少创作面板下拉项；
-- 🔍 **搜索过滤**：顶部搜索框可快速定位某个模型。
-
-</Tab>
-
-<Tab value="③ 完成">
-
-{/* 图片占位 · 对应「快速接入弹窗 - Step 3 完成」。如有截图请在此插入。建议路径：/assets/image/ProLab/03-quick-import-step3.webp */}
+## 完成接入
 
 ![快速接入 ProAPI - 完成](/assets/image/ProLab/03-quick-import-step3.webp)
 
-弹窗显示「✅ 接入成功」+「已激活 X 个模型」，点击「**开始创作**」直接跳转到创作工作台。
+看到 **接入成功** 就说明 ProLab 已经保存了上游和模型。  
+你可以点 **进入工作台**，也可以先关闭弹窗回到设置页检查上游状态。
 
-回到「上游配置」标签，你会看到原本灰色的「ProAPI」卡片**变成激活状态**（带模型数量徽章 + 绿色心跳点）。
+## 确认上游已启用
 
-</Tab>
+![ProAPI 上游已启用](/assets/image/ProLab/04-upstream-active.webp)
 
-</Tabs>
+回到 **上游配置** 后，看 ProAPI 卡片。只要卡片存在，并且能看到模型数量，就说明配置已经生效。  
+如果这里没有卡片，或者模型数量不对，重新点击 **快速接入 ProAPI**，检查令牌是否属于正确分组。
 
-## Step 3（推荐）：跑一次模型测试
-
-为了确认密钥与模型联通正常，切到左侧「**模型测试**」标签：
-
-{/* 图片占位 · 对应「设置 → 模型测试」标签页面。如有截图请在此插入。建议路径：/assets/image/ProLab/04-model-test.webp */}
+## 做一次模型测试
 
 ![模型测试](/assets/image/ProLab/04-model-test.webp)
 
-1. 在模型下拉选 `nano-banana`（最便宜的图像模型，0.04 元/次）；
-2. 点击「测试」，等待 3 ~ 5 秒；
-3. 看到绿色「✅ 调用成功 · 耗时 X.X s」即可。
+接入后建议马上进入 **模型测试**。这一步不是必须，但能帮你提前发现令牌、余额、模型分组或网络问题。  
+新手建议先筛选一个便宜模型测试，不要一次性全选所有模型。
 
-<Callout type="warn" title="测试失败怎么办？">
-- **401 / 鉴权失败** → 密钥错误或令牌已过期，回 [ProAPI 控制台](https://newapi.prorisehub.com) 检查；
-- **403 / 模型不在分组** → 你的令牌分组不是「音视频模型」，需要新建正确分组的令牌；
-- **超时 / 网络错误** → 试试切换 ProLab「代理配置」标签，或检查本地网络。
+<Callout type="warn" title="测试失败时先看错误类型">
+- `401` 通常是密钥错误或令牌失效；
+- `403` 通常是令牌分组不包含该模型；
+- 超时通常和网络、代理或上游响应有关。
 </Callout>
 
-## 进阶：自定义配置（多上游 / 自建中转）
+## 下一步
 
-如果你需要同时接入 **多个上游**（如 ProAPI + 自建 NewAPI + OpenAI 官方），点击右上角「**+ 自定义配置**」：
+接入完成后，根据你的目标继续：
 
-| 字段 | 说明 |
-| --- | --- |
-| 配置名称 | 自起一个易记的名字 |
-| API 端点 | 完整 URL，如 `https://your-relay.com` |
-| API 密钥 | 对应上游的密钥 |
-| 协议类型 | OpenAI / Anthropic / Gemini（按上游协议选择） |
-
-<Callout type="info" title="多上游路由">
-配置多个上游后，ProLab 创作面板的模型下拉会自动合并展示。同一模型名出现在多个上游时，会按上游的优先级或健康度路由。
-</Callout>
+<Cards>
+  <Card
+    href="/prolab/chat"
+    icon={<KeyRoundIcon />}
+    title="测试对话"
+    description="选择 gpt-5.5 等对话模型，发一条消息确认返回。"
+  />
+  <Card
+    href="/prolab/creation"
+    icon={<KeyRoundIcon />}
+    title="测试图片 / 视频"
+    description="选择图像或视频模型，输入提示词并查看任务。"
+  />
+</Cards>
 
 ## 常见问题
 
 <Accordions>
 
-<Accordion title="Q1：我可以直接编辑配置文件吗？">
+<Accordion title="Q1：我的密钥安全吗？会上传到服务器吗？">
 
-可以。ProLab 配置存储在浏览器 `localStorage` 中，但**强烈推荐使用「快速接入」弹窗**，避免手动配置 JSON 时出错。如需迁移，用「设置 → 导入 / 导出」生成 `.json` 文件。
-
-</Accordion>
-
-<Accordion title="Q2：我的密钥安全吗？会上传到服务器吗？">
-
-ProLab 是**纯前端 + 用户自托管**架构，密钥仅保存在你的浏览器 `localStorage`，所有 API 请求**直接从你的浏览器发往 ProAPI 端点**，不经过任何第三方中转。
+ProLab 会把密钥保存到当前浏览器环境中，用于向 ProAPI 发起请求。不要把真实密钥写进文档、截图或公开聊天里。
 
 </Accordion>
 
-<Accordion title="Q3：换电脑后配置怎么迁移？">
+<Accordion title="Q2：为什么音视频令牌没有 gpt-5.5？">
 
-两种方式：
-- **导入 / 导出**：在「设置 → 导入 / 导出」生成 `.json` 文件，到新设备导入；
-- **提示词同步**（如已开启）：登录同一账号自动同步配置 + 提示词库。
+音视频分组主要用于图片和视频模型。如果你要测试 `gpt-5.5` 这类对话模型，需要使用包含对话模型的令牌。
 
 </Accordion>
 
-<Accordion title="Q4：「快速接入」弹窗的端点为什么是锁定的？">
+<Accordion title="Q3：模型列表太多怎么办？">
 
-为了避免客户误填错误端点，「快速接入」固定使用 `https://newapi.prorisehub.com`。如需自定义端点，点击弹窗右上的「**高级：自定义端点**」链接切换到自由编辑模式，或直接走「+ 自定义配置」入口。
-
-</Accordion>
-
-<Accordion title="Q5：我能同时使用 ProAPI 和 OpenAI 官方密钥吗？">
-
-可以。在「+ 自定义配置」新增 OpenAI 官方配置（端点 `https://api.openai.com`，协议选 OpenAI），ProLab 会在创作面板的模型下拉里同时展示两个上游的模型，按上游优先级路由。
+第一次建议全选导入。熟悉后可以回到上游配置，只保留常用模型，减少对话和创作页的下拉项。
 
 </Accordion>
 
 </Accordions>
-
-## 下一步
-
-接入完成后，建议按以下顺序熟悉 ProLab：
-
-<Cards>
-  <Card
-    href="/prolab/creation"
-    icon={<KeyRoundIcon />}
-    title="创作工作台"
-    description="第一张图、第一段视频 —— 模型选择与提示词技巧。"
-  />
-  <Card
-    href="/prolab/chat"
-    icon={<KeyRoundIcon />}
-    title="对话功能"
-    description="多助手、永久 / 临时会话、思考与联网模式。"
-  />
-</Cards>

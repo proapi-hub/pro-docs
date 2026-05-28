@@ -29,6 +29,10 @@ next-env.d.ts
 .omc/
 **/.omc/
 
+# workflow scratch（调研笔记、上游对比，绝不提交）
+.workflow/
+**/.workflow/
+
 # editor / scratch
 batch-scrape-*.md
 *.zip

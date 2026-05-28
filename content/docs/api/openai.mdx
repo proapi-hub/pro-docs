@@ -177,19 +177,25 @@ curl https://newapi.prorisehub.com/v1/videos \
   -H "Authorization: Bearer sk-音视频分组令牌" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "seedance2.0-5s",
+    "model": "veo-3.1-fast",
     "prompt": "一只海豚在落日海面跃出水面",
-    "seconds": 5,
+    "seconds": "6",
     "aspect_ratio": "16:9"
   }'
 ```
+
+> ⚠ `seconds` 必须是字符串（`"6"`），传数字会返回 `400 invalid_json`。详见 [音视频生成 API](/api/media)。
 
 成功后会返回任务 ID，例如：
 
 ```json
 {
-  "id": "video_xxx",
-  "status": "queued"
+  "id": "task_xxxxxxxxxxxx",
+  "object": "video",
+  "model": "veo-3.1-fast",
+  "status": "queued",
+  "progress": 0,
+  "seconds": "6"
 }
 ```
 

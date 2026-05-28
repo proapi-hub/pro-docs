@@ -1,0 +1,62 @@
+---
+title: "提示词中心"
+description: "按截图学习如何搜索、复制和复用 ProLab 提示词"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { ImageIcon } from 'lucide-react';
+
+## 先看提示词中心长什么样
+
+![提示词中心](/assets/image/ProLab/08-prompts.webp)
+
+这张图里要看 4 个位置：
+
+- 顶部搜索框：按标题或正文关键词搜索；
+- 左侧分类：例如 GPT Image、Nano Banana、电商主图、游戏素材；
+- 标签区：按风格、用途、模型快速筛选；
+- 提示词卡片：每张卡片下面都有 **复制 / 详情 / 送至创作**。
+
+## 什么时候应该来这里
+
+![提示词中心](/assets/image/ProLab/08-prompts.webp)
+
+如果你在创作页不知道提示词怎么写，不要先从空白开始硬写。  
+先到这里找一个接近目标的模板，再改里面的主体、场景、颜色、品牌名或比例。
+
+<Callout type="info" title="新手最推荐的用法">
+先点分类，再点标签，最后看卡片标题。找到接近目标的提示词后，优先用 **送至创作**，这样不用手动复制粘贴。
+</Callout>
+
+## 三个按钮分别做什么
+
+![提示词中心](/assets/image/ProLab/08-prompts.webp)
+
+每张提示词卡片都有 3 个按钮：
+
+| 按钮 | 适合什么时候用 |
+| --- | --- |
+| **复制** | 想把提示词粘贴到其他地方，例如 API 请求、文档或别的工具 |
+| **详情** | 想先看完整提示词，确认是否包含变量占位或特殊要求 |
+| **送至创作** | 想直接进入 ProLab 创作工作台生成图片 |
+
+## 送到创作后怎么改
+
+![ProLab 创作工作台](/assets/image/ProLab/05-creation.webp)
+
+提示词送到创作页后，不建议原封不动直接生成。  
+你至少应该改 3 个地方：
+
+1. 把主体换成你的产品、人物或场景；
+2. 把风格换成你想要的视觉方向；
+3. 确认模型、比例和输出类型符合目标。
+
+<Cards>
+  <Card
+    href="/prolab/creation"
+    icon={<ImageIcon />}
+    title="回到创作工作台"
+    description="提示词准备好后，在创作页选择模型并生成结果。"
+  />
+</Cards>
