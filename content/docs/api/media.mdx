@@ -70,6 +70,12 @@ Content-Type: application/json
 | `veo-3.1-ref` | `0.28` | `"4"` `"6"` `"8"` | `1.12`–`2.24` |
 | `sora-2-pro` | `0.51` | `"4"` `"8"` `"12"` | `2.04`–`6.12` |
 
+<Callout type="info">
+**Seedance 2.0 官方版**（`seedance-2.0` / `seedance-2.0-fast`）支持可变时长 5–15s、6 种画幅、多图/视频/音频参考、首尾帧等高级能力，参数集独立，详见 [Seedance 官方版 API](/api/seedance)。
+
+**Grok Imagine Video**（`grok-imagine-video`）按秒计费 ¥0.15/秒，详见 [Grok Imagine Video API](/api/grok-imagine)。
+</Callout>
+
 ### 视频模型 · 时长锁定（Seed 渠道）
 
 | 模型 | ¥ / 秒 | 锁定时长 | 整条价 ¥ |
@@ -107,7 +113,11 @@ Content-Type: application/json
 | `seconds` | **string** | ✓ | 视频时长（秒），必须传字符串：`"6"` 合法，数字 `6` 返回 `400 invalid_json` |
 | `aspect_ratio` | string |  | `16:9` 或 `9:16` |
 | `quality` | string |  | `low` `standard` `sd` `720p` → 720p；其它（含不传）→ 1080p。720p / 1080p 同价 |
-| `image` / `image_url` | string |  | 图生视频：首帧或参考图 URL |
+| `image` / `image_url` | string |  | 图生视频：首帧或参考图 URL（单张） |
+
+<Callout type="info">
+上表为通用号池模型的参数集合，默认支持**单张参考图**。需要多图、视频参考、音频参考、首尾帧、6 种画幅等能力，请使用 [Seedance 官方版 API](/api/seedance) 或 [Grok 图像与视频 API](/api/grok-imagine)。
+</Callout>
 
 ## 图片生成
 

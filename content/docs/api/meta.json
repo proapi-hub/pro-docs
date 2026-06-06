@@ -5,6 +5,9 @@
     "openai",
     "anthropic",
     "gemini",
-    "media"
+    "media",
+    "seedance",
+    "grok-imagine",
+    "user-api"
   ]
 }

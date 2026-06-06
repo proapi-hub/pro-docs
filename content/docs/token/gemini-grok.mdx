@@ -22,17 +22,18 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Ant-Gemini
 
-- **倍率：** `x0.5`
-- **定位：** Gemini 模型主分组。
-- **适合：** Gemini CLI、Cline 的 Gemini 配置、Google Gemini 原生接口。
-- **当前主要模型：**
+- **倍率:** `x0.5`
+- **定位:** Gemini 模型主分组。
+- **适合:** Gemini CLI、Cline 的 Gemini 配置、Google Gemini 原生接口。
+- **当前主要模型(2026-06-06 快照):**
+  - `gemini-3.5-flash-agent`
+  - `gemini-3.5-agent`
+  - `gemini-3.5-flash`
   - `gemini-3.1-pro-preview`
+  - `gemini-3.1-flash-lite-preview`
   - `gemini-3-pro-preview`
   - `gemini-3-flash-preview`
-  - `gemini-3.1-flash-lite-preview`
   - `gemini-3-flash-agent`
-  - `gemini-3.5-flash`
-  - `gemini-3.5-flash-low`
   - `gemini-2.5-pro`
   - `gemini-2.5-flash`
   - `gemini-2.5-flash-lite`
@@ -46,25 +47,23 @@ Gemini 原生协议使用 `https://newapi.prorisehub.com`，不要在 SDK 的 Ge
 
 ## Grok
 
-- **倍率：** `x0.1`
-- **定位：** Grok 对话、推理和搜索类模型分组。
-- **适合：** Grok 聊天、搜索增强、推理任务。
-- **当前主要模型：**
-  - `grok-4.3-beta`
-  - `grok-4.3-low`
-  - `grok-4.3-medium`
-  - `grok-4.3-high`
-  - `grok-4.20-auto`
-  - `grok-4.20-fast`
-  - `grok-4.20-expert`
-  - `grok-4.20-0309`
-  - `grok-4.20-0309-reasoning`
-  - `grok-4.20-0309-non-reasoning`
-  - `grok-4.20-multi-agent-*`
+- **倍率:** `x0.1`
+- **定位:** Grok 对话、推理和搜索类模型分组。
+- **适合:** Grok 聊天、搜索增强、推理任务。
+- **当前主要模型(2026-06-06 快照):**
+  - `grok-4.3-low` / `grok-4.3-medium` / `grok-4.3-high`
+  - `grok-4.3-console`
+  - `grok-4.20-multi-agent-medium`
+  - `grok-4.20-multi-agent-high`
+  - `grok-4.20-multi-agent-xhigh`
+  - `grok-4.20-multi-agent-console`
+  - `grok-4.20-0309-console`
+  - `grok-4.20-0309-reasoning-console`
+  - `grok-4.20-0309-non-reasoning-console`
   - `grok-build-console`
 
 <Callout type="warn" title="画图和视频怎么选">
-当前价格表中 `grok-imagine`、`grok-imagine-image-*`、`grok-imagine-video` 仍可见于 Grok 相关模型，但图片/视频调用建议优先使用 `音视频模型` 分组，并以模型广场显示为准。
+`grok-imagine` / `grok-imagine-image-*` / `grok-imagine-video` 等图像视频模型归属 `音视频模型` 分组,**不在 `Grok` 分组中**。画图/视频调用请使用 `音视频模型` 分组令牌。
 </Callout>
 
 </Tab>
@@ -79,5 +78,5 @@ Gemini 原生协议使用 `https://newapi.prorisehub.com`，不要在 SDK 的 Ge
 | 不确定模型名 | 先到模型广场选择分组，再复制模型名 |
 
 <Callout type="info" title="更新时间">
-本页按 2026-05-27 线上价格接口与渠道快照更新。
+本页按 2026-06-06 线上价格接口与渠道快照更新。
 </Callout>

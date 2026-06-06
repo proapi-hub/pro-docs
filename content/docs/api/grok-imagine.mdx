@@ -1,0 +1,187 @@
+---
+title: "Grok Imagine Video API"
+description: "xAI Grok Imagine 系列官方版视频生成（grok-imagine-video）：480p / 720p 双档计费、最长 12 秒、默认带音轨"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## 概览
+
+`grok-imagine-video` 对接 xAI 官方 Aurora 引擎，按秒计费，按分辨率分两档价格。默认生成带背景音轨的视频。
+
+Base URL：`https://newapi.prorisehub.com`，鉴权头：
+
+```http
+Authorization: Bearer sk-<音视频分组令牌>
+Content-Type: application/json
+```
+
+<Callout type="warn">
+本页所有调用必须使用 **音视频模型** 分组令牌。其它分组令牌返回 `model not found`。
+</Callout>
+
+## 模型与计费
+
+| 模型 | ¥/秒 | 可选 `seconds` | 整条价 ¥ |
+| --- | ---: | --- | --- |
+| `grok-imagine-video` | `0.15` | `"6"` `"10"` `"12"` | `0.90`–`1.80` |
+
+<Callout type="info">
+按 `quality` 字段切分辨率：传 `480p` / `low` / `standard` / `sd` 走 480p；传 `720p`（默认）走 720p。**两档同价**。不支持 1080p。
+</Callout>
+
+## 请求参数
+
+视频走异步任务：**创建任务 → 轮询状态 → 取下载链接**。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | :-: | --- |
+| `model` | string | ✓ | 固定 `grok-imagine-video` |
+| `prompt` | string | ✓ | 视频描述 |
+| `seconds` | **string** | ✓ | `"6"` / `"10"` / `"12"`，必须传字符串 |
+| `aspect_ratio` | string |  | `16:9` / `9:16` / `1:1` |
+| `quality` | string |  | `480p` / `720p`；不同价，见模型表 |
+| `image_url` / `image_url[]` | string / string[] |  | 参考图（公网 URL，最多 5 张） |
+
+## 创建任务
+
+<Tabs items={['cURL', 'Python', 'Node.js']}>
+<Tab value="cURL">
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "grok-imagine-video",
+    "prompt": "一只猫在月球上跳舞，电影级画质",
+    "seconds": "10",
+    "aspect_ratio": "16:9",
+    "quality": "720p"
+  }'
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import requests
+
+resp = requests.post(
+    "https://newapi.prorisehub.com/v1/videos",
+    headers={"Authorization": "Bearer sk-音视频分组令牌", "Content-Type": "application/json"},
+    json={
+        "model": "grok-imagine-video",
+        "prompt": "一只猫在月球上跳舞，电影级画质",
+        "seconds": "10",
+        "aspect_ratio": "16:9",
+        "quality": "720p",
+    },
+    timeout=240,
+)
+print(resp.json())
+```
+
+</Tab>
+<Tab value="Node.js">
+
+```js
+const resp = await fetch("https://newapi.prorisehub.com/v1/videos", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-音视频分组令牌",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "grok-imagine-video",
+    prompt: "一只猫在月球上跳舞，电影级画质",
+    seconds: "10",
+    aspect_ratio: "16:9",
+    quality: "720p",
+  }),
+});
+console.log(await resp.json());
+```
+
+</Tab>
+</Tabs>
+
+带参考图：
+
+```json
+{
+  "model": "grok-imagine-video",
+  "prompt": "两个角色在赛道上飙车",
+  "seconds": "10",
+  "aspect_ratio": "16:9",
+  "quality": "720p",
+  "image_url": [
+    "https://example.com/car-1.jpg",
+    "https://example.com/car-2.jpg"
+  ]
+}
+```
+
+## 查询任务状态
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos/<task_id> \
+  -H "Authorization: Bearer sk-音视频分组令牌"
+```
+
+完成响应：
+
+```json
+{
+  "id": "video_xxx",
+  "object": "video",
+  "status": "completed",
+  "progress": 100,
+  "url": "https://newapi.prorisehub.com/v1/videos/video_xxx/content",
+  "model": "grok-imagine-video",
+  "seconds": "10",
+  "size": "1280x720"
+}
+```
+
+| `status` | 含义 |
+| --- | --- |
+| `queued` | 已排队 |
+| `processing` | 生成中 |
+| `completed` | 完成 |
+| `failed` | 失败，无扣费 |
+
+建议轮询间隔 **5 秒**，单次生成通常 30–180 秒。
+
+## 下载视频
+
+```bash
+curl -L https://newapi.prorisehub.com/v1/videos/<task_id>/content \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -o output.mp4
+```
+
+任务未完成时返回 `409 video_not_ready`。
+
+## 常见错误
+
+| HTTP | 含义 | 排查 |
+| --- | --- | --- |
+| `400` | `Model 'xxx' is not a video model` | 模型名错误，使用 `grok-imagine-video` |
+| `400` | `seconds must be one of [6, 10, 12]` | 时长不在支持范围 |
+| `402` | 余额不足 | 充值后重试 |
+| `409` | `video_not_ready` | 任务未完成，继续轮询 |
+| `429` | 触发限流 | 退避重试 |
+
+错误响应：
+
+```json
+{
+  "error": {
+    "message": "错误描述",
+    "type": "invalid_request_error",
+    "code": "错误码"
+  }
+}
+```

@@ -514,29 +514,37 @@ curl "$BASE_URL/v1/chat/completions" \
 
 ## 06-ProAPI 当前线上快照
 
-快照时间：2026-05-27。
+快照时间：2026-06-06。数据来自 `GET /api/pricing` 与 `GET /api/channel/`,共 146 个模型、27 条渠道(19 启用 / 8 禁用)。
 
-### 当前分组
+### 当前 10 个分组(按倍率从低到高)
 
-| 分组 | 当前默认倍率 | 用途 |
-| --- | --- | --- |
-| `default` | `x1` | 通用兜底分组 |
-| `Codex-Pro` | `x0.3` | Codex / GPT 纯 Pro 号池 |
-| `Codex-Plus-Pro 混池` | `x0.12` | Codex / GPT Pro + Plus 混池 |
-| `claude-max-满血` | `x1.2` | Claude 官方满血高稳定渠道 |
-| `Ant-Claude` | `x0.4` | Ant Claude 渠道 |
-| `Kiro-Claude-高缓存` | `x0.2` | Claude 高缓存性价比渠道 |
-| `claude-reverse-高缓存` | `x0.1` | Claude 低价备用渠道 |
-| `Windsurf` | `x0.25` | Claude / GPT / Gemini 混合备用渠道 |
-| `Ant-Gemini` | `x0.5` | Gemini 模型分组 |
-| `Grok` | `x0.1` | Grok 模型分组 |
-| `音视频模型` | `x1` | 图片与视频模型 |
+| 分组 | 默认倍率 | 模型数 | 稳定性 | 用途 |
+| --- | --- | --- | --- | --- |
+| `Grok` | `x0.1` | 12 | ⭐⭐⭐ | Grok 系列(对话、推理、搜索) |
+| `Codex-Plus-Pro 混池` | `x0.12` | 6 | ⭐⭐⭐⭐⭐ | GPT-5 / Codex Pro+Plus 混池,日常编程性价比首选 |
+| `Embedding & Reranker` | `x0.2` | 49 | ⭐⭐⭐⭐ | 嵌入与重排聚合(OpenAI / Voyage / Jina / Cohere / Qwen / BGE / Gemini / NVIDIA / ZeroEntropy) |
+| `Kiro-Claude-高缓存` | `x0.2` | 7 | ⭐⭐⭐⭐ | Claude 高缓存性价比渠道 |
+| `Codex-Pro` | `x0.3` | 8 | ⭐⭐⭐⭐⭐ | GPT-5 / Codex 纯 Pro 渠道 |
+| `Ant-Gemini` | `x0.5` | 11 | ⭐⭐⭐ | Gemini 反重力官方中转 |
+| `claude-awsq-满血` | `x0.6` | 6 | ⭐⭐⭐⭐⭐ | aws-awsq 官方渠道,95% 高缓存 |
+| `default` | `x1` | 144 | 取决于具体模型 | 通用兜底,可见全站模型 ⚠️ 计费贵 |
+| `音视频模型` | `x1` | 52 | ⭐⭐⭐ | 图片与视频模型聚合 |
+| `claude-max-满血` | `x1.6` | 13 | ⭐⭐⭐⭐⭐ | Claude 官方满血 20x,**仅 Claude Code,不可外接** |
 
-### 当前启用渠道
+### 当前启用渠道(19 条)
 
-启用 18 条：`codex-pro-plus-混池`、`codex-plus-prorise`、`Codex-Pro`、`claude-max-满血渠`、`Ant-Cluade 渠道`、`Kiro(高缓存)渠道`、`claude 逆向高缓渠`、`windsurf-claude`、`windsurf 逆向`、`Ant-Gemini 渠道`、`Ant-Gemini-Fallback`、`grok 官方渠道`、`grok 逆向渠`、`Adobe Firefly 聚合`、`OpenArt Image 聚合`、`ChatGPT2API 自营`、`Ant-nano-banana-pro (cpa)`、`seed2 逆向渠`。
+`Ant-Gemini 渠道`、`Kiro(高缓存)渠道`、`adobe 聚合渠`、`Codex-Pro`、`Ant-Gemini-Fallback`、`ChatGPT 生图渠`、`Ant-nano-banana-pro (cpa)`、`ArtImage 聚合`、`claude-max-满血渠`、`seed2 逆向`、`grok 逆向渠`、`Gpt-Team-Pro`、`Tumuer-Embedding-Reranker`、`awsq-claude`、`gpt-pro`、`Ant-Gemini-Agent (Text)`、`Ant-Gemini-Agent (Image)`、`Grok 官方-音视频`、`seedance-4 图-概率卡人脸渠`。
 
-禁用 6 条：`hy-gemini`、`hy-cluade-anti`、`hy-gpt-plus`、`hy-gpt-team`、`Flow2API 自营 (Banana池)`、`windsurf-gemini-Fallback`。
+### 当前禁用渠道(8 条)
+
+`codex-plus-prorise`、`Ant-Cluade 渠道`、`hy-gpt-team`、`hy-gpt-plus`、`hy-cluade-anti`、`hy-gemini`、`Flow 谷歌池`、`windsurf-gemini-Fallback`。
+
+### 相对上一次快照(2026-05-27)的变化
+
+- **新增分组**:`claude-awsq-满血`(x0.6)、`Embedding & Reranker`(x0.2)。
+- **移除分组**:`Ant-Claude`(x0.4)、`Windsurf`(x0.25)、`claude-reverse-高缓存`(x0.1)。
+- **倍率变化**:`claude-max-满血` 由 x1.2 上调至 **x1.6**。
+- **渠道**:净增 1 启用 + 2 禁用,新增 `awsq-claude`、`Gpt-Team-Pro`、`Tumuer-Embedding-Reranker`、`Ant-Gemini-Agent`、`Grok 官方-音视频` 等。
 
 ### 当前重点 API
 

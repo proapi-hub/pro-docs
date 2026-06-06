@@ -1,0 +1,761 @@
+---
+title: "用户 API(开发者自助端点)"
+description: "ProAPI 为开发者准备的平台管理 API ——令牌管理、用量查询、日志统计、账户与充值,全部支持用程序自动化,无需登录控制台"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { KeyIcon, BarChart3Icon, ScrollTextIcon, WalletIcon, UsersIcon, ListChecksIcon, InfoIcon, UserIcon } from 'lucide-react';
+
+## 这文档是给谁看的
+
+平时调 LLM 只需要 `sk-` 就够了。但如果你想拿脚本管自己的账号——批量发令牌给团队、定时拉用量、查日志对账、自动充值这些——那就轮到这份文档了。
+
+这里全是「用户级」端点,操作的都是你自己的数据,任何账号都能用,跟管理员没关系。和 [overview](/api/overview) 里 `/v1/*` 模型调用是两套完全独立的 API,别搞混。
+
+<Callout type="info" title="一个 AccessToken 就够了">
+  控制台「个人设置 → 系统访问令牌」点一下,拿到的字符串就是本页全部接口的通行证。别和 `sk-` 混着用,下一节会说为什么。
+</Callout>
+
+## 两类 Token,别搞混
+
+New-API 体系里两种 Token,长得不一样、放的位置不一样、能调的接口也不一样:
+
+| 项 | 系统访问令牌(AccessToken) | API Key(`sk-` 开头) |
+| --- | --- | --- |
+| **用途** | 调用本页所有 `/api/*` 管理类端点 | 调用 `/v1/*`、`/dashboard/*`、`/suno/*` 等 LLM 中继端点 |
+| **获取路径** | 控制台 → 个人设置 → 系统访问令牌 → 生成 | 控制台 → 令牌(Token)→ 新增令牌 → 复制 |
+| **格式示例** | `mh2box...XHKw==` (Base64 风格,无前缀) | `sk-AbCd1234efGh...` (固定 `sk-` 前缀) |
+| **放置位置** | `Authorization: Bearer <AccessToken>` | `Authorization: Bearer sk-xxx` 或 `x-api-key: sk-xxx` |
+| **额外请求头** | 部分写操作需要 `New-Api-User: <你的用户 ID>` | 无 |
+| **可调用本页接口** | ✅ | ❌(只能调用 LLM 相关端点) |
+| **可调用 LLM 接口** | ❌ | ✅ |
+
+<Callout type="warn" title="最常见的踩坑">
+  拿 `sk-xxx` 去 `GET /api/token/`,会被 401 弹回来——它俩根本不通用。脚本既要管令牌又要调 LLM 的话,你得同时握两个 Token。
+</Callout>
+
+拿 AccessToken 五步走完:
+
+1. 浏览器打开 [https://newapi.prorisehub.com](https://newapi.prorisehub.com) 登录
+2. 右上角头像 → 个人设置
+3. 找到「系统访问令牌」分组 → 点「生成系统访问令牌」
+4. 弹出的字符串只显示这一次,刷新就没了,赶紧塞进密码管理器或者环境变量
+5. 后面所有 `/api/*` 请求都用它
+
+## 通用约定
+
+| 项 | 值 |
+| --- | --- |
+| **Base URL** | `https://newapi.prorisehub.com` |
+| **请求格式** | JSON(`Content-Type: application/json`) |
+| **鉴权头** | `Authorization: Bearer <AccessToken>` |
+| **写操作附加头** | `New-Api-User: <你的用户 ID>`(创建/更新令牌等) |
+| **协议** | HTTPS only |
+
+**通用响应形态**:
+
+```json
+{
+  "success": true,
+  "message": "",
+  "data": { /* 业务数据 */ }
+}
+```
+
+- `success=false` 时 `message` 包含中文错误描述
+- 大部分列表接口的 `data` 是数组或 `{ items, total }` 形式
+- 时间字段一律 Unix 时间戳(秒),负数 `-1` 通常表示"永不过期"
+
+`New-Api-User` 里填的就是你的用户 ID,「个人设置 → 账号管理」能看到,或者拿下面的 `GET /api/user/self` 调一次也能取到。后面所有示例都用这四个环境变量,一次性存好省事:
+
+```bash
+export NEWAPI_BASE_URL="https://newapi.prorisehub.com"
+export NEWAPI_ACCESS_TOKEN="mh2box...XHKw=="   # 系统访问令牌
+export NEWAPI_USER_ID="123"                     # 你的用户 ID
+export NEWAPI_API_KEY="sk-AbCd1234..."          # LLM 调用用的 API Key
+```
+
+## 速览:本页接口分组
+
+<Cards>
+  <Card href="#1-用量查询" icon={<BarChart3Icon />} title="① 用量查询" description="查 `sk-` 还剩多少钱、token 用了多少、模型限制。" />
+  <Card href="#2-令牌管理" icon={<KeyIcon />} title="② 令牌管理" description="自己的 API Key 增删改查,支持批量建、按模型限、按 IP 白名单。" />
+  <Card href="#3-个人日志与统计" icon={<ScrollTextIcon />} title="③ 日志与统计" description="按时间/模型/token 翻自己的调用记录,对账和排查都靠它。" />
+  <Card href="#4-可访问模型与分组" icon={<UsersIcon />} title="④ 模型与分组" description="账号能调哪些模型、属于哪些分组、倍率多少。" />
+  <Card href="#5-账户与个人资料" icon={<UserIcon />} title="⑤ 账户资料" description="查/改账号信息,顺便能重刷 AccessToken。" />
+  <Card href="#6-充值与兑换码" icon={<WalletIcon />} title="⑥ 充值与兑换" description="兑换码或者扫码付款,在脚本里直接走。" />
+  <Card href="#7-推广返佣" icon={<UsersIcon />} title="⑦ 推广返佣" description="拿到自己的推广码,把推广收益结算成可用配额。" />
+  <Card href="#8-任务查询" icon={<ListChecksIcon />} title="⑧ 任务查询" description="自己提交的 Suno、Midjourney、视频任务长什么样。" />
+  <Card href="#9-公开信息" icon={<InfoIcon />} title="⑨ 公开信息" description="不用鉴权——系统状态、公告、定价、分组列表。" />
+</Cards>
+
+---
+
+## 1. 用量查询
+
+查 `sk-` 当前还剩多少额度最直接的办法,顺带能拿到模型白名单和到期时间。
+
+### 1.1 `GET /api/usage/token`
+
+| 项 | 说明 |
+| --- | --- |
+| **路径** | `GET /api/usage/token` |
+| **鉴权** | `Authorization: Bearer sk-你的-API-Key`(注意,就这一个端点用 `sk-`,不是 AccessToken) |
+| **用途** | 查这条 `sk-` 还剩多少钱、用了多少 token、有没有模型白名单、什么时候到期 |
+
+<Tabs items={['cURL', 'Python', 'Node.js']}>
+<Tab value="cURL">
+
+```bash
+curl "$NEWAPI_BASE_URL/api/usage/token" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY"
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import os, httpx
+
+r = httpx.get(
+    f"{os.environ['NEWAPI_BASE_URL']}/api/usage/token",
+    headers={"Authorization": f"Bearer {os.environ['NEWAPI_API_KEY']}"},
+)
+r.raise_for_status()
+print(r.json()["data"])
+```
+
+</Tab>
+<Tab value="Node.js">
+
+```js
+const res = await fetch(`${process.env.NEWAPI_BASE_URL}/api/usage/token`, {
+  headers: { Authorization: `Bearer ${process.env.NEWAPI_API_KEY}` },
+});
+const { data } = await res.json();
+console.log(data);
+```
+
+</Tab>
+</Tabs>
+
+**响应字段**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "object": "token_usage",
+    "name": "agent-managed",
+    "total_granted": 100.0,
+    "total_used": 12.34,
+    "total_available": 87.66,
+    "unlimited_quota": false,
+    "model_limits_enabled": false,
+    "model_limits": [],
+    "expires_at": -1
+  }
+}
+```
+
+| 字段 | 含义 |
+| --- | --- |
+| `total_granted` | 总授予额度(美元) |
+| `total_used` | 已使用(美元) |
+| `total_available` | 剩余可用(美元) |
+| `unlimited_quota` | 是否无限额度(仍受账户余额限制) |
+| `model_limits_enabled` | 是否启用了模型白名单 |
+| `model_limits` | 允许调用的模型列表 |
+| `expires_at` | 过期时间戳,`-1` 表示永不过期 |
+
+<Callout type="info" title="拿来做余额告警">
+  定时跑一下这接口,`total_available` 一掉到阈值以下就推飞书/企微。等真的 "调用失败" 才发现没钱就太晚了。
+</Callout>
+
+### 1.2 OpenAI 兼容计费
+
+脚本里本来就在用 OpenAI SDK 的话,这条路省事——字段名跟 OpenAI 官方完全对齐:
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/dashboard/billing/subscription` | 订阅额度、总额度、硬限制、有效期 |
+| `GET` | `/v1/dashboard/billing/subscription` | OpenAI SDK 默认调用的路径 |
+| `GET` | `/dashboard/billing/usage` | 历史使用量(按时间区间) |
+| `GET` | `/v1/dashboard/billing/usage` | OpenAI SDK 兼容路径 |
+
+```bash
+curl "$NEWAPI_BASE_URL/v1/dashboard/billing/subscription" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY"
+```
+
+---
+
+## 2. 令牌管理
+
+管自己的 API Key——增删改查。本节所有接口都走 AccessToken 鉴权。
+
+### 2.1 创建令牌 `POST /api/token/`
+
+| 项 | 说明 |
+| --- | --- |
+| **路径** | `POST /api/token/` |
+| **鉴权** | `Authorization: Bearer <AccessToken>` + `New-Api-User: <用户 ID>` |
+| **用途** | 创建新的 API Key,支持单条与批量 |
+
+**关键字段**:
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `name` | string | 令牌名称,最长 30 字符 |
+| `expired_time` | number | 过期时间戳(秒);`-1` = 永不过期 |
+| `remain_quota` | number | 剩余配额(平台内部记账单位) |
+| `unlimited_quota` | boolean | 是否无限配额(仍受账户余额限制) |
+| `model_limits_enabled` | boolean | 是否启用模型白名单 |
+| `model_limits` | string[] | 允许的模型名列表(`model_limits_enabled=true` 时生效) |
+| `allow_ips` | string | 允许调用的 IP,逗号分隔;空串=不限制 |
+| `group` | string | 所属分组(决定能调用哪些模型,见 [令牌与分组](/token/intro)) |
+
+<Tabs items={['cURL', 'Python']}>
+<Tab value="cURL">
+
+```bash
+curl -X POST "$NEWAPI_BASE_URL/api/token/" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "New-Api-User: $NEWAPI_USER_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "agent-managed",
+    "expired_time": -1,
+    "remain_quota": 1000000,
+    "unlimited_quota": false,
+    "model_limits_enabled": true,
+    "model_limits": ["gpt-4o-mini", "claude-sonnet-4-6"],
+    "allow_ips": "",
+    "group": "default"
+  }'
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import os, httpx
+
+resp = httpx.post(
+    f"{os.environ['NEWAPI_BASE_URL']}/api/token/",
+    headers={
+        "Authorization": f"Bearer {os.environ['NEWAPI_ACCESS_TOKEN']}",
+        "New-Api-User": os.environ["NEWAPI_USER_ID"],
+    },
+    json={
+        "name": "agent-managed",
+        "expired_time": -1,
+        "remain_quota": 1_000_000,
+        "unlimited_quota": False,
+        "model_limits_enabled": True,
+        "model_limits": ["gpt-4o-mini", "claude-sonnet-4-6"],
+        "allow_ips": "",
+        "group": "default",
+    },
+)
+print(resp.json())
+```
+
+</Tab>
+</Tabs>
+
+<Callout type="warn" title="sk- 只这一次">
+  返回里 `data.key` 就是新生成的 `sk-xxx`,而且只在创建这一刻给。后面再 `GET /api/token/:id` 出于安全只会返回脱敏后的尾号。漏存了就只能删掉重建。
+</Callout>
+
+### 2.2 查询令牌列表 `GET /api/token/`
+
+```bash
+# 分页列出我所有令牌
+curl "$NEWAPI_BASE_URL/api/token/?p=0&size=20" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+
+# 按名称搜索
+curl "$NEWAPI_BASE_URL/api/token/search?keyword=agent" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+| 查询参数 | 默认 | 说明 |
+| --- | --- | --- |
+| `p` | `0` | 页码,从 0 开始 |
+| `size` | `20` | 每页条数 |
+| `keyword`(仅 `/search`) | — | 模糊匹配 `name` |
+
+### 2.3 获取单个令牌 `GET /api/token/:id`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/token/42" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+注意返回里**不含**完整 `key`(`sk-xxx`),只显示前后几位脱敏。
+
+### 2.4 更新令牌 `PUT /api/token/`
+
+`PUT` 是整对象覆盖更新,`id` 必须传:
+
+```bash
+curl -X PUT "$NEWAPI_BASE_URL/api/token/" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "New-Api-User: $NEWAPI_USER_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": 42,
+    "name": "agent-managed-v2",
+    "status": 1,
+    "remain_quota": 500000,
+    "model_limits_enabled": true,
+    "model_limits": ["gpt-4o-mini"]
+  }'
+```
+
+`status` 取值:`1` 启用、`2` 禁用、`3` 已过期、`4` 已耗尽。
+
+### 2.5 删除令牌
+
+| 操作 | 接口 |
+| --- | --- |
+| 删除单条 | `DELETE /api/token/:id` |
+| 批量删除 | `POST /api/token/batch`,Body 传 `{ "ids": [42, 43, 44] }` |
+
+```bash
+curl -X DELETE "$NEWAPI_BASE_URL/api/token/42" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+<Accordions>
+<Accordion title="给每个项目派一把限定额度的 sk-(脚本示例)">
+
+```python
+import os, httpx
+
+BASE = os.environ["NEWAPI_BASE_URL"]
+H = {
+    "Authorization": f"Bearer {os.environ['NEWAPI_ACCESS_TOKEN']}",
+    "New-Api-User": os.environ["NEWAPI_USER_ID"],
+    "Content-Type": "application/json",
+}
+
+projects = [
+    {"name": "rag-pipeline",      "models": ["gpt-4o-mini"],          "quota": 200_000},
+    {"name": "claude-code-bot",   "models": ["claude-sonnet-4-6"],    "quota": 500_000},
+    {"name": "image-generator",   "models": ["nano-banana"],          "quota": 100_000},
+]
+
+for p in projects:
+    r = httpx.post(f"{BASE}/api/token/", headers=H, json={
+        "name": p["name"],
+        "expired_time": -1,
+        "remain_quota": p["quota"],
+        "model_limits_enabled": True,
+        "model_limits": p["models"],
+        "allow_ips": "",
+        "group": "default",
+    })
+    body = r.json()
+    print(p["name"], "→", body["data"]["key"])  # 立即保存!不会再返回
+```
+
+</Accordion>
+</Accordions>
+
+---
+
+## 3. 个人日志与统计
+
+按时间、模型、Token 翻自己的调用记录。对账、查"为什么这把 sk- 今天烧得这么快"都靠它。
+
+### 3.1 日志列表 `GET /api/log/self`
+
+| 查询参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `p` | int | 页码,从 0 开始 |
+| `page_size` | int | 每页条数(常用 20~100) |
+| `type` | int | 日志类型:`0` 全部、`1` 充值、`2` 消费、`3` 管理、`4` 系统 |
+| `start_timestamp` | int | 起始时间戳(秒) |
+| `end_timestamp` | int | 结束时间戳(秒) |
+| `model_name` | string | 按模型名过滤 |
+| `token_name` | string | 按令牌名过滤 |
+
+```bash
+# 最近 7 天,只看消费类
+START=$(( $(date +%s) - 7*86400 ))
+curl "$NEWAPI_BASE_URL/api/log/self?p=0&page_size=50&type=2&start_timestamp=$START" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回数组中每条日志的常用字段:
+
+| 字段 | 含义 |
+| --- | --- |
+| `id` | 日志 ID |
+| `created_at` | 时间戳(秒) |
+| `type` | 日志类型 |
+| `model_name` | 调用的模型 |
+| `token_name` | 用的哪个令牌 |
+| `prompt_tokens` / `completion_tokens` | 输入 / 输出 token 数 |
+| `quota` | 本次消费配额(内部记账单位,÷500000 ≈ 美元) |
+| `use_time` | 耗时(秒) |
+| `is_stream` | 是否流式 |
+| `content` | 备注 / 错误信息 |
+
+### 3.2 日志统计 `GET /api/log/self/stat`
+
+返回总配额、已用、RPM、TPM 这些聚合数,做实时仪表盘正合适:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/log/self/stat" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+### 3.3 日志搜索 `GET /api/log/self/search`
+
+模糊搜索 `token_name` / `model_name` / `content`:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/log/self/search?keyword=claude" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+### 3.4 按日聚合用量 `GET /api/data/self`
+
+| 查询参数 | 说明 |
+| --- | --- |
+| `start_timestamp` | 起始(秒) |
+| `end_timestamp` | 结束(秒) |
+| `default_time` | `hour` / `day` / `week`,聚合粒度 |
+
+```bash
+START=$(( $(date +%s) - 30*86400 ))
+END=$(date +%s)
+curl "$NEWAPI_BASE_URL/api/data/self?start_timestamp=$START&end_timestamp=$END&default_time=day" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+### 3.5 用 sk- 直接查日志 `GET /api/log/token`
+
+AccessToken 都不用,直接把 `sk-` 拼到 URL 里就能查这条令牌的日志,做"看看我刚才花了多少"那种小工具特别合适:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/log/token?key=$NEWAPI_API_KEY"
+```
+
+<Callout type="warn" title="key 走 query 不走 header">
+  这接口比较特殊,`sk-` 得拼在 `?key=` 上。塞进 Authorization 头会直接 404。
+</Callout>
+
+---
+
+## 4. 可访问模型与分组
+
+回答"这账号到底能调哪些模型"。SDK 集成时建议启动跑一次,别把模型名硬写进代码——上游一调整、价格策略一动,你又得改一次代码。
+
+### 4.1 我能用的模型 `GET /api/user/models`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/user/models" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回 `data` 是字符串数组。能不能调,后端会按"令牌所在分组 + 当前账号权限"综合判断。
+
+### 4.2 渠道 → 模型映射 `GET /api/models`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/models" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回形如:
+
+```json
+{
+  "success": true,
+  "data": {
+    "1": ["gpt-4o-mini", "gpt-4o"],
+    "2": ["claude-sonnet-4-6", "claude-opus-4-7"]
+  }
+}
+```
+
+key 是内部渠道 ID,普通开发者不用关心;value 才是这条渠道上架的模型列表。
+
+### 4.3 我的可用分组与倍率 `GET /api/user/self/groups`
+
+返回每个分组当前给你的倍率和文字说明,拿来挑性价比最高的那个分组:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/user/self/groups" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回示例:
+
+```json
+{
+  "success": true,
+  "data": {
+    "Codex-Pro": {"ratio": 0.3, "desc": "GPT-5 / Codex 纯 Pro 渠道"},
+    "claude-awsq-满血": {"ratio": 0.6, "desc": "aws-awsq 官方渠道,95% 高缓存"}
+  }
+}
+```
+
+### 4.4 公开定价 `GET /api/pricing`
+
+不用鉴权,返回所有模型的当前定价、分组倍率、可用分组——做"自动挑模型 + 算成本"那套逻辑的基础:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/pricing"
+```
+
+| 顶层字段 | 用途 |
+| --- | --- |
+| `data` | 模型列表,含模型名、说明、所属分组、价格、支持端点 |
+| `group_ratio` | 各分组的倍率(`x0.2`/`x0.5`/`x1` …) |
+| `usable_group` | 当前公开可选分组列表 |
+| `supported_endpoint` | 当前公开支持的端点类型 |
+
+详情参见 [API 调用总览 → 查询当前模型和价格](/api/overview#查询当前模型和价格)。
+
+---
+
+## 5. 账户与个人资料
+
+### 5.1 当前用户信息 `GET /api/user/self`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/user/self" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回 `data` 常用字段:
+
+| 字段 | 含义 |
+| --- | --- |
+| `id` | 用户 ID(写操作时填 `New-Api-User` 用) |
+| `username` | 登录名 |
+| `display_name` | 显示名 |
+| `email` | 邮箱 |
+| `role` | `1` 普通、`10` 管理员、`100` Root |
+| `status` | 账号状态 |
+| `group` | 默认分组 |
+| `quota` | 当前剩余配额 |
+| `used_quota` | 累计已用配额 |
+| `request_count` | 累计请求次数 |
+| `aff_code` | 推广码 |
+
+### 5.2 更新个人资料 `PUT /api/user/self`
+
+```bash
+curl -X PUT "$NEWAPI_BASE_URL/api/user/self" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"display_name": "Alice"}'
+```
+
+### 5.3 更新设置 `PUT /api/user/setting`
+
+把整套个人设置当成 JSON 字符串存,一般是界面偏好、通知开关那些:
+
+```bash
+curl -X PUT "$NEWAPI_BASE_URL/api/user/setting" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"setting": "{\"notify_email\": true}"}'
+```
+
+### 5.4 刷新 AccessToken `GET /api/user/token`
+
+AccessToken 泄露了或搞丢了,调一次就重新生成一把,老的立刻作废:
+
+```bash
+curl "$NEWAPI_BASE_URL/api/user/token" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+### 5.5 登出 `GET /api/user/logout`
+
+主要给浏览器清 session 用,脚本里基本调不到。
+
+### 5.6 注销账号 `DELETE /api/user/self`
+
+<Callout type="warn" title="想清楚再调">
+  调下去账号立刻注销,所有令牌一并作废,没有 5 秒撤回。Root 账号系统会拒绝。
+</Callout>
+
+---
+
+## 6. 充值与兑换码
+
+### 6.1 用兑换码充值 `POST /api/user/topup`
+
+```bash
+curl -X POST "$NEWAPI_BASE_URL/api/user/topup" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "REDEEM-CODE-HERE"}'
+```
+
+返回里 `data.quota` 就是这次到账多少。
+
+### 6.2 创建在线支付订单 `POST /api/user/pay`
+
+调起易支付订单,用户扫码付完后,平台通过 `/api/user/epay/notify` 回调入账——你只管创建订单,后面平台处理。
+
+```bash
+curl -X POST "$NEWAPI_BASE_URL/api/user/pay" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "top_up_code": "",
+    "payment_method": "alipay"
+  }'
+```
+
+| 字段 | 说明 |
+| --- | --- |
+| `amount` | 充值金额(人民币元,1:1 等比例兑换为美元等价额度) |
+| `payment_method` | `alipay` / `wxpay` 等,取决于站点开通的支付通道 |
+| `top_up_code` | 可选,促销码 |
+
+### 6.3 试算金额 `POST /api/user/amount`
+
+下单前先算清楚"我付多少 / 到账多少",促销码也能在这一步先验:
+
+```bash
+curl -X POST "$NEWAPI_BASE_URL/api/user/amount" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100, "top_up_code": "PROMO2026"}'
+```
+
+<Callout type="info" title="1:1 兑换">
+  ¥1 进来就是 $1 等价的调用额度。实际每次扣多少,看那个模型在你所在分组下的倍率。
+</Callout>
+
+---
+
+## 7. 推广(返佣)
+
+### 7.1 获取/生成推广码 `GET /api/user/aff`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/user/aff" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+账号还没生成过推广码,这接口顺手就帮你生一个回来。拿到后拼成 `https://newapi.prorisehub.com/register?aff=<code>` 发出去,别人通过这链接注册就挂你头上。
+
+### 7.2 推广额度转可用配额 `POST /api/user/aff_transfer`
+
+推广收益默认躺在「推广余额」里,得手动结算成「可用配额」才能拿来调模型:
+
+```bash
+curl -X POST "$NEWAPI_BASE_URL/api/user/aff_transfer" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"quota": 50000}'
+```
+
+---
+
+## 8. 任务查询
+
+视频、Suno 音乐、Midjourney 这些都是异步任务,提交后得轮询状态,查询入口都在这一节。
+
+### 8.1 通用任务列表 `GET /api/task/self`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/task/self?p=0&size=20" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+返回里每个任务对象都带 `task_id`、`status`(取值 `SUBMITTED`/`IN_PROGRESS`/`SUCCESS`/`FAILURE`)、`progress`、`result_url`。
+
+### 8.2 Midjourney 任务 `GET /api/mj/self`
+
+```bash
+curl "$NEWAPI_BASE_URL/api/mj/self?p=0&size=20" \
+  -H "Authorization: Bearer $NEWAPI_ACCESS_TOKEN"
+```
+
+Midjourney 任务还会多带 `prompt`、`image_url`、`action` 那一套字段,细节翻 [Grok Imagine](/api/grok-imagine) 和 [音视频章节](/api/media)。
+
+<Callout type="info" title="提交在哪里">
+  本页只管"查"。"交"是 LLM 中继那条路:Suno 走 `POST /suno/submit/music`,视频走 `POST /v1/videos`,详见 [音视频模型章节](/api/media)。
+</Callout>
+
+---
+
+## 9. 公开信息
+
+完全不用鉴权,随便 curl 一下就能看:
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/api/status` | 站点状态、配置、功能开关摘要 |
+| `GET` | `/api/uptime/status` | Uptime-Kuma 兼容健康检查 |
+| `GET` | `/api/notice` | 站点公告(Markdown) |
+| `GET` | `/api/about` | 关于页内容 |
+| `GET` | `/api/home_page_content` | 首页自定义内容或 iframe URL |
+| `GET` | `/api/pricing` | 模型定价、分组倍率、可用分组 |
+| `GET` | `/api/user/groups` | 公开的分组列表 |
+| `GET` | `/api/ratio_config` | 公开的模型倍率配置 |
+
+CI 健康检查、客户端启动自检都靠它。
+
+```bash
+curl -fsS "$NEWAPI_BASE_URL/api/uptime/status"  # 非 2xx 就当挂了
+```
+
+---
+
+## 几个常见场景
+
+### 给每个项目派一把限定额度的 sk-
+
+```text
+1. GET /api/user/self                                # 拿到 user_id
+2. GET /api/user/self/groups                         # 看自己有哪些分组
+3. GET /api/user/models                              # 看能用哪些模型
+4. POST /api/token/  ×N                              # 一个项目一把,带上 model_limits 和 remain_quota
+5. 开发那边用各自的 sk- 调 /v1/chat/completions
+6. 每天定时 GET /api/usage/token                     # 余额低于阈值就告警
+```
+
+### 月底跟财务交账
+
+```text
+1. GET /api/data/self?default_time=day&start=月初&end=月末
+2. 对每把 sk- → GET /api/log/self?token_name=xxx     # 按 token 拆账
+3. 倒进自己的 BI 或 Excel 做项目摊分
+```
+
+### 这把 sk- 怎么突然烧这么多钱
+
+```text
+1. GET /api/usage/token         # 看这把 sk- 还剩多少 / 已用多少
+2. GET /api/log/token?key=sk-…  # 不用 AccessToken,直接拉它最近的日志看是谁在调
+3. PUT /api/token/              # 该收紧 model_limits 就收紧,该降额度就降,先 status=2 禁掉也行
+```
+
+---
+
+## 相关链接
+
+<Cards>
+  <Card href="/api/overview" title="API 调用总览" description="Base URL、错误码、流式响应,调 LLM 的起点。" />
+  <Card href="/token/intro" title="令牌与分组" description="都有哪些分组,各自上架什么模型,倍率多少。" />
+  <Card href="/api/openai" title="OpenAI 兼容端点" description="拿 `sk-` 调 LLM 最常走的一条路。" />
+  <Card href="/faq/index" title="常见问题" description="401、分组错配、莫名涨用量,翻翻这里。" />
+</Cards>

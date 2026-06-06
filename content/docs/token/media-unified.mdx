@@ -58,8 +58,15 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | `veo-3.1` | `0.28` | 4 / 6 / 8 | `1.12`–`2.24` |
 | `veo-3.1-ref` | `0.28` | 4 / 6 / 8 | `1.12`–`2.24` |
 | `sora-2-pro` | `0.51` | 4 / 8 / 12 | `2.04`–`6.12` |
+| `seedance-2.0-fast` | `0.15` | 5 – 15 | `0.75`–`2.25` |
+| `seedance-2.0` | `0.30` | 5 – 15 | `1.50`–`4.50` |
+| `grok-imagine-video` | `0.15` | 6 / 10 / 12 | `0.90`–`1.80` |
 
 ### 视频模型 · 时长锁定
+
+<Callout type="info">
+以下为**非官方渠道**锁档版本，便宜且稳定但能力受限。需要可变时长、多图/视频/音频参考、首尾帧能力请使用 [Seedance 官方版 API](/api/seedance)（`seedance-2.0` / `seedance-2.0-fast`）。
+</Callout>
 
 | 模型 | ¥ / 秒 | 锁定时长 | 整条价 ¥ |
 | --- | ---: | ---: | ---: |
@@ -81,5 +88,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | 平价视频 | `kling-3.0`（10s） / `sora-2`（8s） | `1.40` / `1.36` |
 | 高质量视频 | `veo-3.1`（8s） / `sora-2-pro`（8s） | `2.24` / `4.08` |
 | 多镜头长视频 | `kling-o3`（15s） | `3.15` |
+| **多模态参考视频**（图+视+音） | `seedance-2.0`（15s） | `4.50` |
+| **首尾帧 / 多图参考** | `seedance-2.0-fast`（15s） | `2.25` |
+| Grok 风格视频 | `grok-imagine-video`（12s） | `1.80` |
 
-完整调用与参数说明见 [音视频生成 API](/api/media)。
+完整调用与参数说明：
+
+- 通用号池模型（单图基础能力） → [音视频生成 API](/api/media)
+- Seedance 官方版（多图 / 视频 / 音频参考、首尾帧、6 画幅） → [Seedance 官方版 API](/api/seedance)
+- Grok Imagine Video（480p / 720p 双档） → [Grok Imagine Video API](/api/grok-imagine)

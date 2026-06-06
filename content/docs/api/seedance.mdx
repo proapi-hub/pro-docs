@@ -1,0 +1,355 @@
+---
+title: "Seedance 官方版 API"
+description: "字节 Seedance 2.0 官方上游：可变时长、多图/视频/音频参考、首尾帧、6 种画幅等高级能力"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## 概览
+
+`seedance-2.0` 与 `seedance-2.0-fast` 接入字节官方 Seedance 2.0 上游，相比本站 `seedance2.0-5s/10s` 等锁档版本：
+
+- 时长可变 `5`–`15` 秒
+- 6 种画幅
+- 多图 / 视频 / 音频参考
+- 首尾帧 (`reference_mode=start_end`)
+- 图 + 视频 + 音频全能参考
+
+适合需要精细控制画面主体、动作延续与声音节奏的高端场景。
+
+Base URL：`https://newapi.prorisehub.com`，鉴权头：
+
+```http
+Authorization: Bearer sk-<音视频分组令牌>
+Content-Type: application/json
+```
+
+<Callout type="warn">
+本页所有调用必须使用 **音视频模型** 分组令牌。其它分组令牌返回 `model not found`。
+</Callout>
+
+## 模型与计费
+
+| 模型 | ¥/秒 | 时长 (`seconds` / `duration`) | 整条价 ¥ | 定位 |
+| --- | ---: | --- | --- | --- |
+| `seedance-2.0-fast` | `0.15` | `5` – `15` | `0.75`–`2.25` | 快速档，迭代成本低 |
+| `seedance-2.0` | `0.30` | `5` – `15` | `1.50`–`4.50` | 标准档，画质更稳 |
+
+显示口径：1 USD = 1 ¥；按秒计费，`¥/秒 × 视频时长`。
+
+## 能力矩阵
+
+| 维度 | 支持范围 |
+| --- | --- |
+| 分辨率 | `720p`（默认）/ `480p` |
+| 画幅 `aspect_ratio` | `16:9` `9:16` `1:1` `4:3` `3:4` `21:9` |
+| 时长 `duration` | `5`–`15` 秒整数 |
+| 参考图 `reference_images` | 最多 `4` 张（公网 URL） |
+| 参考视频 `reference_videos` | 最多 `3` 个，单段 `3`–`10` 秒，总 ≤ `15` 秒 |
+| 音频参考 `audio_url` | 最多 `1` 个，`2`–`15` 秒，**必须同时提供至少 1 张 `reference_images`** |
+| 首尾帧 `reference_mode=start_end` | 必须传 `2` 张参考图，按 `[首帧, 尾帧]` 顺序 |
+| 视频自带音频 | 默认开启 |
+| 1080p | 不支持 |
+
+## `reference_mode` 模式
+
+| 模式 | 说明 |
+| --- | --- |
+| `auto` | 默认；由系统自动选择处理方式 |
+| `start_frame` | 首帧模式，**必须且只能**传 1 张 `reference_images`，不能同时传参考视频 |
+| `start_end` | 首尾帧模式，**必须且只能**传 2 张 `reference_images`，不能同时传参考视频 |
+| `image_reference` | 图参考模式，可与参考视频混用 |
+
+## 文生视频
+
+<Tabs items={['cURL', 'Python', 'Node.js']}>
+<Tab value="cURL">
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0-fast",
+    "prompt": "A cinematic tracking shot through a neon-lit rainy street at night",
+    "duration": 5,
+    "aspect_ratio": "16:9"
+  }'
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import requests
+
+resp = requests.post(
+    "https://newapi.prorisehub.com/v1/videos",
+    headers={
+        "Authorization": "Bearer sk-音视频分组令牌",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "seedance-2.0-fast",
+        "prompt": "A cinematic tracking shot through a neon-lit rainy street at night",
+        "duration": 5,
+        "aspect_ratio": "16:9",
+    },
+    timeout=240,
+)
+print(resp.json())
+```
+
+</Tab>
+<Tab value="Node.js">
+
+```js
+const resp = await fetch("https://newapi.prorisehub.com/v1/videos", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer sk-音视频分组令牌",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "seedance-2.0-fast",
+    prompt: "A cinematic tracking shot through a neon-lit rainy street at night",
+    duration: 5,
+    aspect_ratio: "16:9",
+  }),
+});
+console.log(await resp.json());
+```
+
+</Tab>
+</Tabs>
+
+响应：
+
+```json
+{
+  "id": "task-abc123",
+  "task_id": "task-abc123",
+  "object": "video",
+  "model": "seedance-2.0-fast",
+  "status": "queued",
+  "progress": 0,
+  "seconds": "5",
+  "size": "1280x720",
+  "created_at": 1713168000
+}
+```
+
+## 图生视频
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "Turn these stills into a polished fashion film with subtle camera motion",
+    "duration": 8,
+    "reference_images": [
+      "https://example.com/look-1.jpg",
+      "https://example.com/look-2.jpg"
+    ],
+    "aspect_ratio": "16:9",
+    "reference_mode": "image_reference"
+  }'
+```
+
+`reference_images` 仅接受公网 URL（HTTPS）。请勿使用本地文件上传或 `data:` URI，避免请求体过大。
+
+## 首尾帧
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "Smooth transition from day to night",
+    "duration": 6,
+    "reference_images": [
+      "https://example.com/day.jpg",
+      "https://example.com/night.jpg"
+    ],
+    "aspect_ratio": "16:9",
+    "reference_mode": "start_end"
+  }'
+```
+
+<Callout type="warn">
+`start_end` 模式必须且只能传 2 张 `reference_images`，且不能同时传 `reference_video` / `reference_videos`，否则返回 `400 invalid_reference_inputs`。
+</Callout>
+
+## 视频参考
+
+单参考视频：
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0-fast",
+    "prompt": "Continue this shot with a smooth orbiting camera move",
+    "duration": 8,
+    "reference_video": "https://example.com/source.mp4",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+多参考视频：
+
+```json
+{
+  "model": "seedance-2.0-fast",
+  "prompt": "Create a new cinematic continuation based on these clips",
+  "duration": 8,
+  "reference_videos": [
+    "https://example.com/source-1.mp4",
+    "https://example.com/source-2.mp4"
+  ],
+  "aspect_ratio": "16:9"
+}
+```
+
+## 图 + 音频参考
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "Make the character dance naturally to the rhythm of the reference audio",
+    "duration": 8,
+    "reference_images": ["https://example.com/character.png"],
+    "audio_url": "https://example.com/music.mp3",
+    "aspect_ratio": "16:9",
+    "reference_mode": "image_reference"
+  }'
+```
+
+<Callout type="warn">
+使用 `audio_url` 时**必须同时传至少 1 张 `reference_images`**，否则返回 `400 audio_requires_image`。
+</Callout>
+
+## 图 + 视频 + 音频全能参考
+
+适合同时控制人物形象、动作延续与声音节奏：
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "Create a cinematic music video. Keep the character and outfit from the reference images, continue the camera motion from the reference video, and make the movement follow the rhythm of the reference audio.",
+    "duration": 8,
+    "reference_images": [
+      "https://example.com/character-front.jpg",
+      "https://example.com/style-reference.jpg"
+    ],
+    "reference_video": "https://example.com/motion-reference.mp4",
+    "audio_url": "https://example.com/music-reference.mp3",
+    "aspect_ratio": "16:9",
+    "reference_mode": "image_reference"
+  }'
+```
+
+限制汇总：
+
+| 素材 | 上限 |
+| --- | --- |
+| `reference_images` | 4 张 |
+| `reference_video` / `reference_videos` | 3 个（单段 3–10s，总 ≤ 15s） |
+| `audio_url` | 1 个（2–15s） |
+| `duration` | 5–15s 整数 |
+
+## 查询任务状态
+
+```bash
+curl https://newapi.prorisehub.com/v1/videos/<task_id> \
+  -H "Authorization: Bearer sk-音视频分组令牌"
+```
+
+| `status` | 含义 |
+| --- | --- |
+| `queued` | 已入队 |
+| `processing` | 生成中（`progress` 0–100） |
+| `succeeded` / `completed` | 完成，可用 `url` 或 `/content` 下载 |
+| `failed` | 失败，无扣费 |
+
+完成响应示例：
+
+```json
+{
+  "id": "task-abc123",
+  "object": "video",
+  "model": "seedance-2.0-fast",
+  "status": "succeeded",
+  "progress": 100,
+  "seconds": "5",
+  "size": "1280x720",
+  "url": "https://newapi.prorisehub.com/v1/videos/task-abc123/content",
+  "created_at": 1713168000,
+  "completed_at": 1713168120
+}
+```
+
+## 下载视频
+
+```bash
+curl -L https://newapi.prorisehub.com/v1/videos/<task_id>/content \
+  -H "Authorization: Bearer sk-音视频分组令牌" \
+  -o result.mp4
+```
+
+任务未完成时返回 `409`，错误码 `video_not_ready`。
+
+## 兼容字段
+
+| 字段 | 行为 |
+| --- | --- |
+| `duration` | **推荐**。整数 5–15 |
+| `seconds` | 兼容字段；仅在未传 `duration` 时生效 |
+| `image_url` / `reference_image_urls` | 合并到 `reference_images` |
+| `video_url` / `reference_video_url` / `reference_video_urls` | 合并到 `reference_videos` |
+| `audioUrl` | `audio_url` 驼峰兼容 |
+| `referenceImages` / `referenceVideo` / `videoConfig` | 驼峰兼容字段 |
+
+同时传 `duration` 与 `seconds` 时以 `duration` 为准；同时传顶层与 `video_config` 内部字段时以顶层为准。
+
+## 错误码
+
+| HTTP | 错误码 | 说明 |
+| --- | --- | --- |
+| `400` | `invalid_json` | JSON 格式错误 |
+| `400` | `model_not_supported` | 模型不存在或非视频模型 |
+| `400` | `invalid_reference_inputs` | 参考图 / 视频 / 音频参数错误 |
+| `400` | `invalid_reference_mode` | `reference_mode` 不支持 |
+| `400` | `invalid_resolution_name` | 分辨率不支持（如传 1080p） |
+| `400` | `invalid_video_length` | 时长不在 5–15s 整数范围 |
+| `400` | `audio_requires_image` | 传 `audio_url` 但没传 `reference_images` |
+| `404` | `task_not_found` | 任务不存在 |
+| `409` | `video_not_ready` | 视频尚未完成 |
+| `429` | `upstream_rate_limited` | 请求过于频繁 |
+| `451` | `upstream_safety_rejected` | 内容或素材触发安全策略 |
+| `503` | `token_unavailable` | 暂无可用上游 |
+| `504` | `upstream_timeout` | 生成超时 |
+
+错误响应：
+
+```json
+{
+  "error": {
+    "message": "错误描述",
+    "type": "invalid_request_error",
+    "param": "参数名",
+    "code": "错误码"
+  }
+}
+```

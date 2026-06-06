@@ -1,48 +1,64 @@
 ---
-title: "令牌与分组"
+title: "站点计费规则与分组简介"
 description: "从小白视角理解 ProAPI 分组、倍率、模型广场与对外可用模型"
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-## 先记住一句话
+## 一句话带你理解我们站点的计费方式
+
+我们的站点计费可以从 [模型广场](https://newapi.prorisehub.com/pricing) 查看
+例如如图所示，我们可以看到下图在标准模式下的计费方式，所有的模型只会优先显示最低分组的价格，点击详情后可查看各分组的实际调用价格情况，但有一个点需要额外注意，尽管显示美金，但我们的站的充值倍率是按照 1 : 1 人民币的方式来计算
+
+![标准模式下的视图](https://bu.dusays.com/2026/06/06/6a23e199ead35.png)
+
+
+而充值视图则是你实际真实调用花费的金额
+
+![](https://bu.dusays.com/2026/06/06/6a23ee9a3e2ed.png)
+
+充值视图就是给你看“实际从你钱包里掏的钱大概是多少” —— 它把平台内部的 quota 价格，再乘以他们设定的充值汇率换算成更接近你真实花费的数字，方便你快速估算调用这个模型到底要花自己多少钱，而不是只看一堆内部 $ quota。
+
+简单说：标准视图看平台怎么标价是否虚标，充值视图看你实际要花多少钱。
+
+然后就是我们的各个渠道之间的分组是如何定价的：
+
+![](https://bu.dusays.com/2026/06/06/6a23f1ad94941.png)
+
 
 **令牌分组 = 你这把 API Key 可以使用哪些模型 + 按什么倍率扣额度。**
-
 创建令牌时一定要选对分组。分组选错时，最常见的表现是：
 
 - 调用时报 `model not found` 或“模型不存在”。
 - 明明模型广场能看到模型，但你的令牌无法调用。
-- 可以调用，但倍率不是你预期的那一档。
+- 可以调用，但倍率和智商不是你预期的那一档
 
 <Callout type="info" title="给新手的建议">
-如果你只是想最快跑通，先用对应用途的专用分组：写代码选 `Codex-Plus-Pro 混池`，Claude Code 选 `Kiro-Claude-高缓存` 或 `claude-max-满血`，Gemini CLI 选 `Ant-Gemini`，画图/视频选 `音视频模型`。
+如果你只是想最快跑通,先用对应用途的专用分组:写代码选 `Codex-Plus-Pro 混池`,Claude Code 选 `Kiro-Claude-高缓存` 或 `claude-awsq-满血`,Gemini CLI 选 `Ant-Gemini`,画图/视频选 `音视频模型`,嵌入/重排选 `Embedding & Reranker`。
 </Callout>
 
 ## 当前分组总览
 
-以下数据来自当前站点的真实价格接口，更新时间：**2026-05-27**。
+以下数据来自当前站点的真实价格接口,更新时间:**2026-06-06**。
 
 | 分组 | 当前默认倍率 | 稳定性 | 适合做什么 | 新手建议 |
 | --- | --- | --- | --- | --- |
-| `default` | `x1` | 取决于具体模型 | 通用兜底分组，可见全站模型 | 不追求折扣时使用 |
-| `Codex-Pro` | `x0.3` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，稳定档 | 追求稳定选它 |
-| `Codex-Plus-Pro 混池` | `x0.12` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型，性价比档 | 日常编程首选 |
-| `claude-max-满血` | `x1.2` | ⭐⭐⭐⭐⭐ | Claude 高稳定线路 | 生产环境和重要任务优先 |
-| `Ant-Claude` | `x0.4` | ⭐⭐⭐ | Claude 通用线路 | 普通 Claude 任务可用 |
-| `Kiro-Claude-高缓存` | `x0.2` | ⭐⭐⭐⭐ | Claude 高缓存线路 | Claude Code 性价比首选 |
-| `claude-reverse-高缓存` | `x0.1` | ⭐⭐ | Claude 低价备用线路 | 适合作备用，不建议单独依赖 |
-| `Windsurf` | `x0.25` | ⭐ | Claude / GPT / Gemini 综合低价线路 | 低价备用，稳定性较弱 |
-| `Ant-Gemini` | `x0.5` | ⭐⭐⭐ | Gemini CLI 与 Gemini API | Gemini 用户选它 |
 | `Grok` | `x0.1` | ⭐⭐⭐ | Grok 对话、推理、搜索类模型 | Grok 用户选它 |
+| `Codex-Plus-Pro 混池` | `x0.12` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型,性价比档 | 日常编程首选 |
+| `Embedding & Reranker` | `x0.2` | ⭐⭐⭐⭐ | OpenAI / Voyage / Jina / Cohere / Qwen / BGE / NVIDIA 嵌入与重排 | RAG / 向量检索首选 |
+| `Kiro-Claude-高缓存` | `x0.2` | ⭐⭐⭐⭐ | Claude 高缓存线路 | Claude Code 性价比首选 |
+| `Codex-Pro` | `x0.3` | ⭐⭐⭐⭐⭐ | Codex / GPT 编程模型,稳定档 | 追求稳定选它 |
+| `Ant-Gemini` | `x0.5` | ⭐⭐⭐ | Gemini CLI 与 Gemini API | Gemini 用户选它 |
+| `claude-awsq-满血` | `x0.6` | ⭐⭐⭐⭐⭐ | Claude 官方 aws-awsq 渠道,95% 高缓存 | 重要 Claude 任务+性价比兼顾 |
+| `default` | `x1` | 取决于具体模型 | 通用兜底分组,可见全站模型 | ⚠️ 计费很贵,不懂别用 |
 | `音视频模型` | `x1` | ⭐⭐⭐ | 图片、视频生成模型 | 画图/视频必须选它 |
+| `claude-max-满血` | `x1.6` | ⭐⭐⭐⭐⭐ | 官方满血 20x 渠道 | **最强的官方 claude 满血模型，同时也是最贵的** |
 
-<Callout type="warn" title="旧文档中的几个变化">
-- `claude-max-特价-满血` 当前不在真实分组列表中，文档已移除。
-- `Kiro-Claude-高缓存` 当前默认倍率是 `x0.2`，不是旧文档里的 `x0.3`。
-- `claude-reverse-高缓存` 当前默认倍率是 `x0.1`，不是旧文档里的 `x0.2`。
-- `Grok` 当前默认倍率是 `x0.1`，不是旧文档里的 `x0.005`。
+<Callout type="warn" title="相对上一次快照(2026-05-27)的变化">
+- **新增分组**:`claude-awsq-满血`(x0.6,95% 高缓存)、`Embedding & Reranker`(x0.2)。
+- **移除分组**:`Ant-Claude`、`Windsurf`、`claude-reverse-高缓存`(对应上游渠道已禁用)。如果你的令牌仍指向这些分组,请前往控制台切换。
+- **倍率变化**:`claude-max-满血` 由 `x1.2` 上调至 `x1.6`。
 </Callout>
 
 ## 怎么看“倍率”
@@ -78,7 +94,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 ## 分组详情
 
 <Cards>
-  <Card title="Claude 系列分组" href="/token/claude" description="claude-max-满血 / Ant-Claude / Kiro-Claude-高缓存 / claude-reverse-高缓存 / Windsurf" />
+  <Card title="Claude 系列分组" href="/token/claude" description="claude-max-满血 / claude-awsq-满血 / Kiro-Claude-高缓存" />
   <Card title="GPT / Codex 系列分组" href="/token/codex" description="Codex-Pro / Codex-Plus-Pro 混池" />
   <Card title="Gemini 与 Grok 分组" href="/token/gemini-grok" description="Ant-Gemini / Grok 当前模型与倍率。" />
   <Card title="音视频模型分组" href="/token/media-unified" description="图片、视频模型清单与使用建议。" />
