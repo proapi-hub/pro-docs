@@ -1,74 +1,76 @@
 <div align="center">
 
-# ProAPI 中转站 · 官方文档
+# ProAPI · Official Documentation
 
-**Claude Code / Codex / Gemini CLI 统一接入 · 人民币 1:1 充值 · 国内直连**
+**Unified access for Claude Code / Codex / Gemini CLI · 1:1 CNY top-up · Direct access from China**
 
-[![官网](https://img.shields.io/badge/官网-newapi.prorisehub.com-2563eb?style=flat-square)](https://newapi.prorisehub.com)
-[![文档](https://img.shields.io/badge/文档-在线阅读-22c55e?style=flat-square)](https://newapi.prorisehub.com)
-[![注册](https://img.shields.io/badge/立即注册-免费开始-f97316?style=flat-square)](https://newapi.prorisehub.com/sign-up)
-[![QQ群](https://img.shields.io/badge/售后QQ群-1085665112-ec4899?style=flat-square)](https://qm.qq.com/q/LTDoWhAziC)
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+[![Website](https://img.shields.io/badge/Website-newapi.prorisehub.com-2563eb?style=flat-square)](https://newapi.prorisehub.com)
+[![Docs](https://img.shields.io/badge/Docs-Read_Online-22c55e?style=flat-square)](https://newapi.prorisehub.com)
+[![Sign Up](https://img.shields.io/badge/Sign_Up-Free_to_Start-f97316?style=flat-square)](https://newapi.prorisehub.com/sign-up)
+[![QQ Group](https://img.shields.io/badge/Support_QQ-1085665112-ec4899?style=flat-square)](https://qm.qq.com/q/LTDoWhAziC)
 
 </div>
 
 ---
 
-## ProAPI 是什么
+## What is ProAPI
 
-ProAPI 是面向国内开发者的 **LLM API 中转 / 聚合服务**。一个统一的 API Endpoint，把 Claude、GPT、Gemini 等主流大模型聚合到一起，让你在 **Claude Code、Codex、Gemini CLI** 以及任意 OpenAI 兼容客户端里无缝调用。
+ProAPI is an **LLM API gateway / aggregation service** built for developers in China. A single API endpoint aggregates mainstream large models — Claude, GPT, Gemini and more — so you can call them seamlessly from **Claude Code, Codex, Gemini CLI**, and any OpenAI-compatible client.
 
-- 🌏 **国内直连**：无需自备梯子，命令行工具开箱即用
-- 💰 **人民币 1:1 充值**：1 元人民币 = 1 美元额度，支付宝 / 微信直接付
-- 🔑 **令牌分组计费**：Claude Code 组 / Codex 组 / Gemini 组 / 绘图组，按需取用
-- 🛠️ **三大 CLI 全支持**：Claude Code、Codex、Gemini CLI 一站配齐
-- 🔄 **CC-Switch 一键切换**：可视化管理多家供应商配置
+- 🌏 **Direct access from China**: CLI tools work out of the box, no VPN required
+- 💰 **1:1 CNY top-up**: 1 CNY = 1 USD credit, pay via Alipay / WeChat
+- 🔑 **Token-group billing**: Claude Code / Codex / Gemini / Image groups, use what you need
+- 🛠️ **Three CLIs supported**: Claude Code, Codex, Gemini CLI in one place
+- 🔄 **CC-Switch one-click**: visual management for multiple providers
 
-## 三步开始使用
+## Get Started in 3 Steps
 
-| 步骤 | 操作 |
-|------|------|
-| **1. 注册** | 打开 [newapi.prorisehub.com/sign-up](https://newapi.prorisehub.com/sign-up)，GitHub 一键登录或邮箱注册 |
-| **2. 充值** | 控制台「钱包管理」→ 选择额度 → 支付宝 / 微信支付（1:1 比例） |
-| **3. 配置 CLI** | 创建令牌并**选对分组** → 按教程配置 Claude Code / Codex / Gemini |
+| Step | Action |
+|------|--------|
+| **1. Sign up** | Open [newapi.prorisehub.com/sign-up](https://newapi.prorisehub.com/sign-up), log in with GitHub or email |
+| **2. Top up** | Console → "Wallet" → choose amount → pay via Alipay / WeChat (1:1 ratio) |
+| **3. Configure CLI** | Create a token and **pick the right group** → follow the guide for Claude Code / Codex / Gemini |
 
-> ⚠️ **令牌分组一定要选对** —— 分组决定可用模型。选错会出现「模型不存在」。详见 [模型分组介绍](https://newapi.prorisehub.com/token/intro)。
+> ⚠️ **Pick the right token group** — the group determines which models are available. Choosing the wrong one causes "model not found". See [Token Groups](https://newapi.prorisehub.com/token/intro).
 
-## 完整教程
+## Full Guides
 
-📖 **[在线文档：newapi.prorisehub.com](https://newapi.prorisehub.com)**
+📖 **[Online Docs: newapi.prorisehub.com](https://newapi.prorisehub.com)**
 
-- [快速开始](https://newapi.prorisehub.com) — 注册、充值、令牌、CLI 全流程
-- [模型分组介绍](https://newapi.prorisehub.com/token/intro) — 各分组可用模型与计费
-- [Claude Code 配置](https://newapi.prorisehub.com/faq/claude-code)
-- [Codex 配置](https://newapi.prorisehub.com/faq/codex)
-- [Gemini CLI 配置](https://newapi.prorisehub.com/faq/gemini)
-- [CC-Switch 一键切换](https://newapi.prorisehub.com/ccswitch)
+- [Quick Start](https://newapi.prorisehub.com) — sign-up, top-up, tokens, CLI walkthrough
+- [Token Groups](https://newapi.prorisehub.com/token/intro) — available models & billing per group
+- [Claude Code Setup](https://newapi.prorisehub.com/faq/claude-code)
+- [Codex Setup](https://newapi.prorisehub.com/faq/codex)
+- [Gemini CLI Setup](https://newapi.prorisehub.com/faq/gemini)
+- [CC-Switch](https://newapi.prorisehub.com/ccswitch)
 
-## 需要帮助
+## Need Help
 
-遇到配置问题或想和其他用户交流？加入官方售后 QQ 群：
+Join the official support QQ group for setup help and user discussion:
 
-👉 **[Pro Api 中转售后群 · 群号 1085665112](https://qm.qq.com/q/LTDoWhAziC)**
+👉 **[Pro Api Support Group · 1085665112](https://qm.qq.com/q/LTDoWhAziC)**
 
 ---
 
 <details>
-<summary>📦 本仓库技术说明（面向贡献者）</summary>
+<summary>📦 Technical notes (for contributors)</summary>
 
-本仓库是 ProAPI 官方文档站源码，基于 **Next.js + [Fumadocs](https://fumadocs.dev)** 构建。
+This repo is the source of the ProAPI documentation site, built with **Next.js + [Fumadocs](https://fumadocs.dev)**.
 
 ```bash
-pnpm install   # 安装依赖
-pnpm dev       # 本地开发 http://localhost:3000
-pnpm build     # 生产构建
+pnpm install   # install dependencies
+pnpm dev       # local dev at http://localhost:3000
+pnpm build     # production build
 ```
 
-文档源位于 `content/docs/`（MDX）。详细架构见 `CLAUDE.md`。
+Docs live in `content/docs/` (MDX). See `CLAUDE.md` for architecture details.
 
 </details>
 
 <div align="center">
 
-**[🚀 立即注册 ProAPI](https://newapi.prorisehub.com/sign-up)** · 让 Claude Code 在国内跑起来
+**[🚀 Sign up for ProAPI](https://newapi.prorisehub.com/sign-up)** · Run Claude Code from China
 
 </div>
